@@ -28,7 +28,8 @@ namespace BlackLegionBot.CommandHandling
             var chatMessage = messageReceivedArgs.ChatMessage;
             var calledCommand = chatMessage.GetCalledCommand();
             var (commandIsFound, command) = await CommandRetriever.TryGetCommand(calledCommand);
-            if (commandIsFound && command.Permission >= chatMessage.GetPermissionOfSender() && (!_cooldownManager.IsInCooldown(command.OriginalCommand) || EPermission.MODS >= chatMessage.GetPermissionOfSender()))
+            if (commandIsFound && command.Permission >= chatMessage.GetPermissionOfSender() && 
+                (!_cooldownManager.IsInCooldown(command.OriginalCommand) || EPermission.MODS >= chatMessage.GetPermissionOfSender()))
             {
                 _cooldownManager.StartCooldown(command.OriginalCommand);
                 var messageToSend = await _operatorHandler.InjectOperators(command.Message, chatMessage.Username, messageReceivedArgs.ChatMessage.Message);

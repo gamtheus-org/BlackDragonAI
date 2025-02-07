@@ -17,11 +17,12 @@ namespace BlackLegionBot.NonCommandBased
         private readonly BlbApiHandler _apiClient;
         private readonly List<(string webhookPath, Action eventToRaise)> _webhooks = new List<(string webhookPath, Action eventToRaise)>();
 
-        public WebhookHandler(BlbApiHandler apiClient)
+        public WebhookHandler(BlbApiHandler apiClient, Action reconnect)
         {
             this._apiClient = apiClient;
             _webhooks.Add(("commands", RaiseCommandChangedEvent));
             _webhooks.Add(("timedmessages", RaiseTimedMessagesChangedEvent));
+            _webhooks.Add(("reconnect", reconnect));
         }
 
         public async void ListenForWebhooks()
