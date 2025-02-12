@@ -78,7 +78,18 @@ namespace BlackLegionBot.TwitchApi
 
         public void ReadTokensFromFile()
         {
-            using var sr = new StreamReader("AuthTokens.json");
+            const string authTokensPath = "AuthTokens.json";
+            if (!File.Exists(authTokensPath))
+            {
+                var authToken = new AuthTokens()
+                {
+                    AccessToken = "",
+                    RefreshToken = ""
+                };
+                File.WriteAllText(authTokensPath, JsonConvert.SerializeObject(authToken));
+            }
+
+            using var sr = new StreamReader(authTokensPath);
             var tokens = JsonConvert.DeserializeObject<AuthTokens>(sr.ReadToEnd());
             this._tokens.AccessToken = tokens.AccessToken;
             this._tokens.RefreshToken = tokens.RefreshToken;
