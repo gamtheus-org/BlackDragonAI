@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Threading;
+using System.Text.Json;
 using BlackLegionBot.CommandHandling;
 using BlackLegionBot.CommandStorage;
 using BlackLegionBot.Credentials;
@@ -9,16 +7,7 @@ using BlackLegionBot.NonCommandBased;
 using BlackLegionBot.TwitchApi;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using TwitchLib.Client;
-using TwitchLib.Client.Events;
-using TwitchLib.Client.Models;
-using TwitchLib.Communication.Clients;
-using TwitchLib.Communication.Enums;
-using TwitchLib.Communication.Models;
 using Microsoft.Extensions.Hosting;
-using MongoDB.Bson;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Refit;
 
 namespace BlackLegionBot
@@ -45,13 +34,12 @@ namespace BlackLegionBot
                     var userInfo = new UserInfo(config.GetSection("UserConfig"));
                     services.AddSingleton(userInfo);
 
-                    var contentSerializer = new JsonSerializerSettings
-                    {
-                        ContractResolver = new CamelCasePropertyNamesContractResolver()
-                    };
                     var refitSettings = new RefitSettings()
                     {
-                        ContentSerializer = new JsonContentSerializer(contentSerializer)
+                        ContentSerializer = new SystemTextJsonContentSerializer(new JsonSerializerOptions()
+                        {
+                            PropertyNameCaseInsensitive = true
+                        })
                     };
 
                     services.AddRefitClient<ITwitchApiManager>(refitSettings).ConfigureHttpClient(httpClient =>

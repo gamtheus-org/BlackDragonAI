@@ -94,13 +94,16 @@ namespace BlackLegionBot.TwitchApi
         public async Task ListenForNewToken()
         {
             using var listener = new HttpListener();
-            listener.Prefixes.Add("http://127.0.0.1:11037/");
+            listener.Prefixes.Add("http://127.0.0.1/");
             listener.Start();
 
             var result = await listener.GetContextAsync();
             var requestUrl = result.Request.Url;
             if (string.IsNullOrEmpty(requestUrl.Query))
+            {
+                SendResponseOnListener(result.Response, "Something went wrong and was not able to authorize");
                 return;
+            }
             var indexOfCode = requestUrl.Query.IndexOf("code=", StringComparison.InvariantCultureIgnoreCase);
             if (indexOfCode < 0)
             {
@@ -109,6 +112,22 @@ namespace BlackLegionBot.TwitchApi
             var authToken = requestUrl.Query.Substring(indexOfCode + 5, requestUrl.Query.IndexOf("&") - 6);
             Console.WriteLine($"Token: {authToken}");
             await UseAuthorizationToken(authToken);
+            SendResponseOnListener(result.Response, "Processing authorization result");
+        }
+
+        private static void SendResponseOnListener(HttpListenerResponse response, string message)
+        {
+            var buffer = Encoding.UTF8.GetBytes(message);
+
+            response.ContentLength64 = buffer.Length;
+            response.ContentType = "text/plain";
+            response.StatusCode = (int)HttpStatusCode.OK;
+
+            // Write response
+            using var output = response.OutputStream;
+            output.Write(buffer, 0, buffer.Length);
+
+            response.Close(); // Close response
         }
 
         public string GetAccessToken() => $"Bearer {_tokens.AccessToken}";
