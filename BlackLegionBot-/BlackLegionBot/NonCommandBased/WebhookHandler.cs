@@ -11,7 +11,7 @@ namespace BlackLegionBot.NonCommandBased
 {
     public class WebhookHandler
     {
-        private const string WebhookPath = "/bot/webhook";
+        private const string WebhookPath = "/bot/webhook/";
         
         public event Action CommandsChanged;
         public event Action TimedMessagesChanged;
@@ -55,6 +55,7 @@ namespace BlackLegionBot.NonCommandBased
 
         private HttpListener SetListener()
         {
+            const string WebhookPath = "/bot/webhook";
             var listener = new HttpListener();
             listener.Prefixes.Add($"http://localhost{WebhookPath}");
             listener.Start();
