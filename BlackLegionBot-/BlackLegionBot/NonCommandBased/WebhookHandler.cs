@@ -31,7 +31,7 @@ namespace BlackLegionBot.NonCommandBased
         {
             var defaultWebhookUrl = new WebhookSubscription()
             {
-                Url = $"https://blackdragonai.nl{WebhookPath}"
+                Url = $"https://blackdragonai.nl{WebhookPath[..^1]}"
             };
             await this._apiClient.SubscribeToWebhookIdempotent(defaultWebhookUrl);
             var listener = SetListener();
