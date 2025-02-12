@@ -1,18 +1,18 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm32v7 AS base
+FROM mcr.microsoft.com/dotnet/runtime:6.0  AS base
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["BlackLegionBot/BlackLegionBot.csproj", "BlackLegionBot/"]
 RUN dotnet restore "BlackLegionBot/BlackLegionBot.csproj"
 COPY . .
 WORKDIR "/src/BlackLegionBot"
-RUN dotnet build "BlackLegionBot.csproj" -c Release -o /app/build
+RUN dotnet build "BlackLegionBot.csproj" -c Debug -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "BlackLegionBot.csproj" -c Release -o /app/publish
+RUN dotnet publish "BlackLegionBot.csproj" -c Debug -o /app/publish
 
 FROM base AS final
 WORKDIR /app
