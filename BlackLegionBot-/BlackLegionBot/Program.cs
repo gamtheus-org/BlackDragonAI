@@ -27,7 +27,7 @@ namespace BlackLegionBot
                         .Build();
 
                     // configs
-                    var blbApiConfig = new BlbApiConfig(config.GetSection("BlbApi"));
+                    var blbApiConfig = new BlbApiConfig(config.GetSection("Blbapi"));
                     services.AddSingleton<BlbApiConfig>(blbApiConfig);
                     var ircCredentials = new IrcCredentials(config.GetSection("Irc"));
                     services.AddSingleton(ircCredentials);
