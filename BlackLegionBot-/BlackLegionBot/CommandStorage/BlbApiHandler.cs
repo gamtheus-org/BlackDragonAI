@@ -71,11 +71,11 @@ namespace BlackLegionBot.CommandStorage
         public Task DeleteTimedMessage(string command) =>
             _blbApi.DeleteTimedMessage(this._jwt, command);
 
-        public Task SubscribeToWebhook() =>
-            _blbApi.SubscribeToWebhook(this._jwt);
+        public Task SubscribeToWebhook(WebhookSubscription webhookSubscription) =>
+            _blbApi.SubscribeToWebhook(this._jwt, webhookSubscription);
 
-        public Task SubscribeToWebhookIdempotent() =>
-            _blbApi.SubscribeToWebhookIdempotent(this._jwt);
+        public Task SubscribeToWebhookIdempotent(WebhookSubscription webhookSubscription) =>
+            _blbApi.SubscribeToWebhookIdempotent(this._jwt, webhookSubscription);
 
         public Task<BlbCounter> IncrementDeathCount(string gameId) =>
             _blbApi.IncrementDeathCount(this._jwt, gameId);

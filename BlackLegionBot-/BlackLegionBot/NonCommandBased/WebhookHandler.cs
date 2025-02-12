@@ -11,6 +11,8 @@ namespace BlackLegionBot.NonCommandBased
 {
     public class WebhookHandler
     {
+        private const string WebhookPath = "/bot/webhook";
+        
         public event Action CommandsChanged;
         public event Action TimedMessagesChanged;
 
@@ -27,7 +29,11 @@ namespace BlackLegionBot.NonCommandBased
 
         public async void ListenForWebhooks()
         {
-            await this._apiClient.SubscribeToWebhookIdempotent();
+            var defaultWebhookUrl = new WebhookSubscription()
+            {
+                Url = $"https://blackdragonai.nl{WebhookPath}"
+            };
+            await this._apiClient.SubscribeToWebhookIdempotent(defaultWebhookUrl);
             var listener = SetListener();
 
             while (true)
@@ -50,7 +56,7 @@ namespace BlackLegionBot.NonCommandBased
         private HttpListener SetListener()
         {
             var listener = new HttpListener();
-            listener.Prefixes.Add("http://*:2005/");
+            listener.Prefixes.Add($"http://localhost{WebhookPath}");
             listener.Start();
             Console.WriteLine("Listening");
             return listener;

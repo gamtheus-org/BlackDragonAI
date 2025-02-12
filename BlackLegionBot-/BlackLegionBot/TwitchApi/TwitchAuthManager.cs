@@ -105,7 +105,7 @@ namespace BlackLegionBot.TwitchApi
         public async Task ListenForNewToken()
         {
             using var listener = new HttpListener();
-            listener.Prefixes.Add("http://127.0.0.1/");
+            listener.Prefixes.Add("http://127.0.0.1/bot/auth");
             listener.Start();
 
             var result = await listener.GetContextAsync();

@@ -40,10 +40,10 @@ namespace BlackLegionBot.CommandStorage
         Task DeleteTimedMessage([Header("X-Access-Token")] string authToken, string commandName);
 
         [Post("/webhook")]
-        Task<WebhookSubscriber> SubscribeToWebhook([Header("X-Access-Token")] string authToken);
+        Task<WebhookSubscriber> SubscribeToWebhook([Header("X-Access-Token")] string authToken, [Body] WebhookSubscription webhookSubscription);
 
         [Post("/webhook/idempotent")]
-        Task<WebhookSubscriber> SubscribeToWebhookIdempotent([Header("X-Access-Token")] string authToken);
+        Task<WebhookSubscriber> SubscribeToWebhookIdempotent([Header("X-Access-Token")] string authToken, [Body] WebhookSubscription webhookSubscription);
 
         [Post("/deaths/{gameId}")]
         Task<BlbCounter> IncrementDeathCount([Header("X-Access-Token")] string authToken, string gameId);
