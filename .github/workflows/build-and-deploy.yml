@@ -23,7 +23,7 @@ jobs:
       # Build Docker images for your applications
       - name: Build blackdragonai-bot image
         run: |
-          cat > ./BlackLegionBot-/BlackLegionBot/appsettings.Docker.json <<EOF
+          cat > ./BlackLegionBot-/BlackLegionBot/appsettings.json <<EOF
           ${{ secrets.APPSETTINGS }}
           EOF
           ls ./BlackLegionBot-/BlackLegionBot/
