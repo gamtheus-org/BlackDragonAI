@@ -24,8 +24,9 @@ jobs:
       - name: Build blackdragonai-bot image
         run: |
           cat > ./BlackLegionBot-/BlackLegionBot/appsettings.Docker.json <<EOF
-          ${{secrets.APPSETTINGS}}
+          ${{ secrets.APPSETTINGS }}
           EOF
+          ls
 
           docker build -t blackdragonai-bot -f ./BlackLegionBot-/Dockerfile ./BlackLegionBot-
 
