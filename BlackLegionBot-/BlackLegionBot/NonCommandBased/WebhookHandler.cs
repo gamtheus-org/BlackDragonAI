@@ -56,7 +56,7 @@ namespace BlackLegionBot.NonCommandBased
         private HttpListener SetListener()
         {
             var listener = new HttpListener();
-            listener.Prefixes.Add($"http://localhost{WebhookPath}");
+            listener.Prefixes.Add($"http://localhost:80{WebhookPath}");
             listener.Start();
             Console.WriteLine("Listening");
             return listener;
