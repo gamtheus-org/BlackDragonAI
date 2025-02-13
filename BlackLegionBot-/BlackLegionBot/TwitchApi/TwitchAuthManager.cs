@@ -16,6 +16,7 @@ namespace BlackLegionBot.TwitchApi
     public class TwitchAuthManager
     {
         private const string BaseAuthUrl = "https://id.twitch.tv/oauth2/authorize";
+        private const string RedirectUrl = "https://blackdragonai.nl/api/auth/authorized";
         private readonly ITwitchAuthApi _twitchAuthApi;
         private readonly UserInfo _userInfo;
         private readonly AuthTokens _tokens = new AuthTokens();
@@ -36,7 +37,7 @@ namespace BlackLegionBot.TwitchApi
             try
             {
                 Console.WriteLine($"Apply code: {code}");
-                var authResult = await this._twitchAuthApi.Authorize(this._userInfo.ClientId, this._userInfo.Secret, code);
+                var authResult = await this._twitchAuthApi.Authorize(this._userInfo.ClientId, this._userInfo.Secret, code, redirect_uri: RedirectUrl);
 
                 _tokens.RefreshToken = authResult.RefreshToken;
                 Console.WriteLine($"Refresh token: {authResult.RefreshToken}");
