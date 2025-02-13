@@ -52,7 +52,10 @@ namespace BlackLegionBot.NonCommandBased
             var path = request.Request.RawUrl;
             if (path.Contains("/authorized"))
             {
+                Console.WriteLine($"Has body: {request.Request.HasEntityBody}");
+
                 await using var stream = request.Request.InputStream;
+                stream.Position = 0;
                 using var reader = new StreamReader(stream);
                 var authToken = await reader.ReadToEndAsync();
 
