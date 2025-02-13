@@ -43,11 +43,13 @@ namespace BlackLegionBot
         private readonly CommercialManager _commercialManager;
         private readonly LiveStatusManager _liveStatusManager;
         private readonly ReconnectionManager _reconnectionManager;
+        private readonly TwitchAuthManager _twitchAuthManager;
 
         public Bot(BlbApiHandler blbApi, ICommandRetriever commandRetriever, TwitchApiManager twitchApi, UserInfo userInfo, 
-            IrcCredentials ircCredentials, CooldownManager cooldownManager)
+            IrcCredentials ircCredentials, CooldownManager cooldownManager, TwitchAuthManager twitchAuthManager)
         {
             this._userInfo = userInfo;
+            _twitchAuthManager = twitchAuthManager;
             this._twitchApi = twitchApi;
             _blbApi = blbApi;
 
@@ -115,7 +117,12 @@ namespace BlackLegionBot
             {
                 Console.WriteLine("Retrieving timed messages because webhook");
                 await _timedMessageManager.Start(this._liveStatusManager);
-            };           
+            };
+            _webhookHandler.AuthTokenChanged += async authToken =>
+            {
+                Console.WriteLine($"Processing auth token: {authToken}");
+                await _twitchAuthManager.UseAuthorizationToken(authToken);
+            };
         }
 
         public async Task Connect()
@@ -135,7 +142,7 @@ namespace BlackLegionBot
         }
 
         public void SendWhisperToChannel(string message) =>
-            SendWhisperToChannel(message, this._userInfo.ChannelName);
+            SendWhisperToChannel(message, "gamtheus");
         
         public void SendWhisperToChannel(string message, string whisperTo) =>
             SendMessageToChannel($"/w {whisperTo} {message}");
