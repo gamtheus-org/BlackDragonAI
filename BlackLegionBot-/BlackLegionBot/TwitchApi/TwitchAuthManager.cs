@@ -38,6 +38,7 @@ namespace BlackLegionBot.TwitchApi
             {
                 Console.WriteLine($"Apply code: {code}");
                 var authResult = await this._twitchAuthApi.Authorize(this._userInfo.ClientId, this._userInfo.Secret, code, redirect_uri: RedirectUrl);
+                Console.WriteLine($"Get access token and refresh token result: {JsonConvert.SerializeObject(authResult)}");
 
                 _tokens.RefreshToken = authResult.RefreshToken;
                 Console.WriteLine($"Refresh token: {authResult.RefreshToken}");
