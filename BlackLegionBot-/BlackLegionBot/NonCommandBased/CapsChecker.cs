@@ -36,7 +36,7 @@ namespace BlackLegionBot.NonCommandBased
         public bool Validate(ChatMessage chatMessage) => !UsesTooManyCaps(chatMessage.Message);
         public void HandleValidationError(ChatMessage chatMessage)
         {
-            this._bot.TimeoutUser(chatMessage.Username, 1, "Onnodig gebruik van caps is niet toegestaan");
+            this._bot.TimeoutUser(chatMessage.Username, 1, "Overabundant of caps is not allowed");
         }
     }
 }

@@ -27,7 +27,7 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
             var channelInfo = await _twitchApiManager.GetChannelInfo();
             var gameInfo = await _twitchApiManager.GetGameInfo(channelInfo.GameId);
             var deaths = await GetDeaths(channelInfo.GameId);
-            return $"BlackDragon is {deaths} keer dood gegaan in {gameInfo.Name}";
+            return $"BlackDragon has died {deaths} times in {gameInfo.Name}";
         }
 
         private async Task<int> GetDeaths(string gameId)

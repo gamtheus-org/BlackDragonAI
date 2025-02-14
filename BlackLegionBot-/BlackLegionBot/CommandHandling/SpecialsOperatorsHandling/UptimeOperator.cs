@@ -27,10 +27,10 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
                 var streamData = await this.TwitchApi.GetStreamData();
                 if (streamData == null)
                 {
-                    return "De stream is helaas momenteel niet live. Probeer het opnieuw wanneer de stream live is.";
+                    return "The stream is sadly not live. Try again when the stream is live.";
                 }
 
-                message = message.Replace(Operator, streamData.StartedAt.ConvertToDifferenceFromNowInDutch(TimeSpanConversionLimit.SECONDS, TimeSpanConversionLimit.HOURS));
+                message = message.Replace(Operator, streamData.StartedAt.ConvertToDifferenceFromNowInEnglish(TimeSpanConversionLimit.SECONDS, TimeSpanConversionLimit.HOURS));
             }
 
             return message;

@@ -20,7 +20,7 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
                 var recipient = originalCommand.ExtractRecipientOfString();
                 if (string.IsNullOrEmpty(recipient))
                 {
-                    return "Een naam moet worden mee gegeven voor dit commando";
+                    return "A name needs to be given for this command";
                 }
 
                 return message.Replace(Operator, recipient);

@@ -6,7 +6,7 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
 {
     public static class DateTimeExtensions
     {
-        public static string ConvertToDifferenceFromNowInDutch(this DateTime dateTime, TimeSpanConversionLimit minDiff, TimeSpanConversionLimit maxDiff)
+        public static string ConvertToDifferenceFromNowInEnglish(this DateTime dateTime, TimeSpanConversionLimit minDiff, TimeSpanConversionLimit maxDiff)
         {
             var dateTimeDiff = DateTimeSpan.CompareDates(dateTime.ToUniversalTime(), DateTime.UtcNow);
             var uptimeMessage = new StringBuilder();
@@ -16,27 +16,27 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
                 timeMessageAppender.AppendMessageBasedOnTime(minDiff, maxDiff, dateTimeDiff, ref uptimeMessage);
             }
 
-            return uptimeMessage.Length > 0 ? FixGrammar(uptimeMessage.ToString()) : $"nog geen {TimeSpanConversionLimitToDutchText(minDiff, false)}";
+            return uptimeMessage.Length > 0 ? FixGrammar(uptimeMessage.ToString()) : $"not even {TimeSpanConversionLimitToEnglishText(minDiff, false)}";
         }
 
         private static IEnumerable<TimeMessageAppender> GetTimeMessageAppenders() =>
             new List<TimeMessageAppender>()
             {
-                new TimeMessageAppender(TimeSpanConversionLimit.YEARS, "jaar", "jaar"),
-                new TimeMessageAppender(TimeSpanConversionLimit.MONTHS, "maanden", "maand"),
-                new TimeMessageAppender(TimeSpanConversionLimit.WEEKS, "weken", "week"),
-                new TimeMessageAppender(TimeSpanConversionLimit.DAYS, "dagen", "dag"),
-                new TimeMessageAppender(TimeSpanConversionLimit.HOURS, "uur", "uur"),
-                new TimeMessageAppender(TimeSpanConversionLimit.MINUTES, "minuten", "minuut"),
-                new TimeMessageAppender(TimeSpanConversionLimit.SECONDS, "seconden", "seconde"),
-                new TimeMessageAppender(TimeSpanConversionLimit.MILLISECONDS, "milliseconden", "milliseconde")
+                new TimeMessageAppender(TimeSpanConversionLimit.YEARS, "years", "year"),
+                new TimeMessageAppender(TimeSpanConversionLimit.MONTHS, "months", "month"),
+                new TimeMessageAppender(TimeSpanConversionLimit.WEEKS, "weeks", "week"),
+                new TimeMessageAppender(TimeSpanConversionLimit.DAYS, "days", "day"),
+                new TimeMessageAppender(TimeSpanConversionLimit.HOURS, "hours", "hour"),
+                new TimeMessageAppender(TimeSpanConversionLimit.MINUTES, "minutes", "minute"),
+                new TimeMessageAppender(TimeSpanConversionLimit.SECONDS, "secondes", "second"),
+                new TimeMessageAppender(TimeSpanConversionLimit.MILLISECONDS, "milliseconds", "millisecond")
             };
 
         private static string FixGrammar(string message)
         {
 
             if(message.Contains(',')) message = message.Substring(0, message.LastIndexOf(','));
-            return message.Contains(",") ? message.ReplaceLastOccurrence(",", " en") : message;
+            return message.Contains(",") ? message.ReplaceLastOccurrence(",", " and") : message;
         }
 
         public static string ReplaceLastOccurrence(this string source, string find, string replace)
@@ -46,17 +46,31 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
             return result;
         }
 
-        public static string TimeSpanConversionLimitToDutchText(TimeSpanConversionLimit tscl, bool inPlural) =>
+        // public static string TimeSpanConversionLimitToDutchText(TimeSpanConversionLimit tscl, bool inPlural) =>
+        //     tscl switch
+        //     {
+        //         TimeSpanConversionLimit.MILLISECONDS => inPlural ? "milliseconden" : "milliseconde", 
+        //         TimeSpanConversionLimit.SECONDS => inPlural ? "seconden" : "seconde", 
+        //         TimeSpanConversionLimit.MINUTES => inPlural ? "minuten" : "minuut", 
+        //         TimeSpanConversionLimit.HOURS => inPlural ? "uren" : "uur", 
+        //         TimeSpanConversionLimit.DAYS => inPlural ? "dagen" : "dag", 
+        //         TimeSpanConversionLimit.WEEKS => inPlural ? "weken" : "week", 
+        //         TimeSpanConversionLimit.MONTHS => inPlural ? "maanden" : "maand", 
+        //         TimeSpanConversionLimit.YEARS => inPlural ? "jaren" : "jaar",
+        //         _ => string.Empty
+        //     };
+        
+        public static string TimeSpanConversionLimitToEnglishText(TimeSpanConversionLimit tscl, bool inPlural) =>
             tscl switch
             {
-                TimeSpanConversionLimit.MILLISECONDS => inPlural ? "milliseconden" : "milliseconde", 
-                TimeSpanConversionLimit.SECONDS => inPlural ? "seconden" : "seconde", 
-                TimeSpanConversionLimit.MINUTES => inPlural ? "minuten" : "minuut", 
-                TimeSpanConversionLimit.HOURS => inPlural ? "uren" : "uur", 
-                TimeSpanConversionLimit.DAYS => inPlural ? "dagen" : "dag", 
-                TimeSpanConversionLimit.WEEKS => inPlural ? "weken" : "week", 
-                TimeSpanConversionLimit.MONTHS => inPlural ? "maanden" : "maand", 
-                TimeSpanConversionLimit.YEARS => inPlural ? "jaren" : "jaar",
+                TimeSpanConversionLimit.MILLISECONDS => inPlural ? "milliseconds" : "millisecond", 
+                TimeSpanConversionLimit.SECONDS => inPlural ? "seconds" : "second", 
+                TimeSpanConversionLimit.MINUTES => inPlural ? "minutes" : "minute", 
+                TimeSpanConversionLimit.HOURS => inPlural ? "hours" : "hour", 
+                TimeSpanConversionLimit.DAYS => inPlural ? "days" : "day", 
+                TimeSpanConversionLimit.WEEKS => inPlural ? "weeks" : "week", 
+                TimeSpanConversionLimit.MONTHS => inPlural ? "months" : "month", 
+                TimeSpanConversionLimit.YEARS => inPlural ? "years" : "year",
                 _ => string.Empty
             };
     }
