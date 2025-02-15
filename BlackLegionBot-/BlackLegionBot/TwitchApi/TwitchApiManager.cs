@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BlackLegionBot.CommandHandling;
 using BlackLegionBot.NonCommandBased;
 using BlackLegionBot.TwitchApi.Models;
+using Newtonsoft.Json;
 using Refit;
 
 namespace BlackLegionBot.TwitchApi
@@ -60,8 +61,13 @@ namespace BlackLegionBot.TwitchApi
         public async Task<UserDetails> GetUserDetails(string name) =>
             (await this._apiClient.GetUserDetails(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, null, name)).Data.FirstOrDefault();
 
-        public async Task<ChannelInfo> GetChannelInfo() =>
-            (await this._apiClient.GetChannelInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId)).Data.First();
+        public async Task<ChannelInfo> GetChannelInfo()
+        {
+            var channelInfoList = await this._apiClient.GetChannelInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId,
+                this._userInfo.UserId);
+            Console.WriteLine($"Channel info result: {JsonConvert.SerializeObject(channelInfoList)}");
+            return channelInfoList.Data.First();
+        }
 
         public async Task UpdateChannelInfo(ChannelInfo channelInfo) =>
             await this._apiClient.UpdateChannelInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId, channelInfo);
