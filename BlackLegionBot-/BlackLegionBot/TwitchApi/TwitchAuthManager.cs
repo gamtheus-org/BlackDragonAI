@@ -95,6 +95,7 @@ namespace BlackLegionBot.TwitchApi
             var tokens = JsonConvert.DeserializeObject<AuthTokens>(sr.ReadToEnd());
             this._tokens.AccessToken = tokens.AccessToken;
             this._tokens.RefreshToken = tokens.RefreshToken;
+            Console.WriteLine($"Tokens:\nAccessToken: {tokens.AccessToken}\nRefreshToken: {tokens.RefreshToken}");
         }
 
         public async Task Reauthorize()
