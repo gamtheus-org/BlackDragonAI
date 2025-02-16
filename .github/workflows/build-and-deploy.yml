@@ -26,6 +26,7 @@ jobs:
           cat > ./BlackLegionBot-/BlackLegionBot/appsettings.json <<EOF
           ${{ secrets.APPSETTINGS }}
           EOF
+          cat appsettings.json
           ls ./BlackLegionBot-/BlackLegionBot/
 
           docker build -t blackdragonai-bot -f ./BlackLegionBot-/Dockerfile ./BlackLegionBot-
