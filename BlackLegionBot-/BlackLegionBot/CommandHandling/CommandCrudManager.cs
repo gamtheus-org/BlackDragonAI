@@ -41,9 +41,9 @@ namespace BlackLegionBot.CommandHandling
                 var apiError = originalException.ToBlbApiError();
                 _sendMessageToChannel($"Something went wrong with the following message: {apiError.Message}");
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return;
+                Console.WriteLine($"Exception: {e}");
             }
         }
 
@@ -66,9 +66,9 @@ namespace BlackLegionBot.CommandHandling
                 var apiError = originalException.ToBlbApiError();
                 _sendMessageToChannel($"Something went wrong with the following message: {apiError.Message}");
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return;
+                Console.WriteLine($"Exception: {e}");
             }
         }
 
@@ -110,9 +110,9 @@ namespace BlackLegionBot.CommandHandling
                 var apiError = originalException.ToBlbApiError();
                 _sendMessageToChannel($"Something went wrong with the following message: {apiError.Message}");
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return;
+                Console.WriteLine($"Exception: {e}");
             }
         }
 
@@ -167,10 +167,14 @@ namespace BlackLegionBot.CommandHandling
 
         private EPermission ExtractPermission(string message)
         {
-            if (message.Contains("p/subs", StringComparison.InvariantCultureIgnoreCase)) return EPermission.SUBS;
-            if (message.Contains("p/mods", StringComparison.InvariantCultureIgnoreCase)) return EPermission.MODS;
-            if (message.Contains("p/admins", StringComparison.InvariantCultureIgnoreCase)) return EPermission.ADMIN;
-            else return EPermission.EVERYONE;
+            if (message.Contains("p/subs", StringComparison.InvariantCultureIgnoreCase)) 
+                return EPermission.SUBS;
+            else if (message.Contains("p/mods", StringComparison.InvariantCultureIgnoreCase)) 
+                return EPermission.MODS;
+            else if (message.Contains("p/admins", StringComparison.InvariantCultureIgnoreCase)) 
+                return EPermission.ADMIN;
+            else 
+                return EPermission.EVERYONE;
         }
 
         private int ExtractTimer(string message)

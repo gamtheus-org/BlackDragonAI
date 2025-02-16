@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using BlackLegionBot.NonCommandBased;
 using TwitchLib.Client.Events;
 
@@ -17,7 +18,7 @@ namespace BlackLegionBot.CommandHandling
             this._bot = bot;
         }
 
-        public void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        public Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
             var recipient = messageReceivedArgs.ChatMessage.ExtractRecipient();
             var addedPermission = this._urlChecker.AddPermission(recipient);
@@ -29,6 +30,8 @@ namespace BlackLegionBot.CommandHandling
             {
                 this._bot.SendMessageToChannel($"@{messageReceivedArgs.ChatMessage.DisplayName}, De gebruiker heeft al permissie gekregen");
             }
+
+            return Task.CompletedTask;
         }
     }
 }

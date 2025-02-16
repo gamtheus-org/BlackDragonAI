@@ -4,6 +4,7 @@ using BlackLegionBot.TwitchApi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TwitchLib.Client.Events;
 
 namespace BlackLegionBot.CommandHandling
@@ -62,7 +63,7 @@ namespace BlackLegionBot.CommandHandling
             this._counterDeletionCommandHandler.OnCounterDeleted += this._counterRetrievalCommandHandler.DeleteCounter;
         }
 
-        public void HandleCommand(object sender, OnMessageReceivedArgs messageReceivedArgs)
+        public async Task HandleCommand(object sender, OnMessageReceivedArgs messageReceivedArgs)
         {
             if (!EPermission.MODS.HasEqualOrHigherPermission(messageReceivedArgs.ChatMessage.GetPermissionOfSender()))
             {
@@ -78,7 +79,7 @@ namespace BlackLegionBot.CommandHandling
             {
                 foreach (var commandHandler in GetCommandHandlers(messageReceivedArgs))
                 {
-                    commandHandler.Handle(messageReceivedArgs);
+                    await commandHandler.Handle(messageReceivedArgs);
                 }
             }
             catch (Exception e)
@@ -122,7 +123,7 @@ namespace BlackLegionBot.CommandHandling
 
     public class CrashCommandHandler : ICommandHandler
     {
-        public void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        public Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
             throw new Exception("Bot deed krak");
         }

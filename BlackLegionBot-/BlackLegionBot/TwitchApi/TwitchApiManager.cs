@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BlackLegionBot.CommandHandling;
 using BlackLegionBot.NonCommandBased;
 using BlackLegionBot.TwitchApi.Models;
+using Newtonsoft.Json;
 using Refit;
 
 namespace BlackLegionBot.TwitchApi
@@ -52,16 +53,21 @@ namespace BlackLegionBot.TwitchApi
             (await this._apiClient.GetGameInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, id, name)).Data.FirstOrDefault();
 
         public async Task<int> GetFollowCount() =>
-            (await this._apiClient.GetFollowerInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId, null, null, 1)).Total;
+            (await this._apiClient.GetFollowerInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId, null, 1)).Total;
 
         public async Task<FollowerInfo> GetFollowerInfo(string userIdToRetrieve) =>
-            (await this._apiClient.GetFollowerInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId, userIdToRetrieve, null, 1)).Data.First();
+            (await this._apiClient.GetFollowerInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId, userIdToRetrieve, 1)).Data.First();
 
         public async Task<UserDetails> GetUserDetails(string name) =>
             (await this._apiClient.GetUserDetails(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, null, name)).Data.FirstOrDefault();
 
-        public async Task<ChannelInfo> GetChannelInfo() =>
-            (await this._apiClient.GetChannelInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId)).Data.First();
+        public async Task<ChannelInfo> GetChannelInfo()
+        {
+            var channelInfoList = await this._apiClient.GetChannelInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId,
+                this._userInfo.UserId);
+            Console.WriteLine($"Channel info result: {JsonConvert.SerializeObject(channelInfoList)}");
+            return channelInfoList.Data.First();
+        }
 
         public async Task UpdateChannelInfo(ChannelInfo channelInfo) =>
             await this._apiClient.UpdateChannelInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId, channelInfo);

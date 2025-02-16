@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using BlackLegionBot.NonCommandBased;
 using Refit;
 using TwitchLib.Client.Events;
@@ -20,7 +21,7 @@ namespace BlackLegionBot.CommandHandling
             this._sendMessageToChannel = sendMessageToChannel;
         }
 
-        public async void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        public async Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
             var lengthString = new Regex("[0-9]+").Matches(messageReceivedArgs.ChatMessage.Message).FirstOrDefault()?.Value;
             ECommercialLength length = ECommercialLength.L30;

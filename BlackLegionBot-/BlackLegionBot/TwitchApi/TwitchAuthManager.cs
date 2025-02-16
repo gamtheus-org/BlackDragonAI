@@ -16,9 +16,13 @@ namespace BlackLegionBot.TwitchApi
     public class TwitchAuthManager
     {
         private const string BaseAuthUrl = "https://id.twitch.tv/oauth2/authorize";
+        private const string RedirectUrl = "https://blackdragonai.nl/api/auth/authorized";
         private readonly ITwitchAuthApi _twitchAuthApi;
         private readonly UserInfo _userInfo;
         private readonly AuthTokens _tokens = new AuthTokens();
+
+        private const string AuthTokensPath = "./auth/AuthTokens.json";
+        
         public event Action<string> WhisperNeedsToBeSend;
         private System.Timers.Timer _timer;
 
@@ -28,6 +32,8 @@ namespace BlackLegionBot.TwitchApi
             this._twitchAuthApi = twitchAuthApi;
             this._userInfo = userInfo;
 
+            Directory.CreateDirectory("./auth/");
+            
             ReadTokensFromFile();
         }
 
@@ -36,7 +42,8 @@ namespace BlackLegionBot.TwitchApi
             try
             {
                 Console.WriteLine($"Apply code: {code}");
-                var authResult = await this._twitchAuthApi.Authorize(this._userInfo.ClientId, this._userInfo.Secret, code);
+                var authResult = await this._twitchAuthApi.Authorize(this._userInfo.ClientId, this._userInfo.Secret, code, redirect_uri: RedirectUrl);
+                Console.WriteLine($"Get access token and refresh token result: {JsonConvert.SerializeObject(authResult)}");
 
                 _tokens.RefreshToken = authResult.RefreshToken;
                 Console.WriteLine($"Refresh token: {authResult.RefreshToken}");
@@ -60,7 +67,7 @@ namespace BlackLegionBot.TwitchApi
                 Console.WriteLine("Writing tokens");
                 Console.WriteLine($"Access token: {_tokens.AccessToken}");
                 Console.WriteLine($"Refresh token: {_tokens.RefreshToken}");
-                await using var sw = new StreamWriter("AuthTokens.json");
+                await using var sw = new StreamWriter(AuthTokensPath);
                 await sw.WriteAsync(JsonConvert.SerializeObject(_tokens));
                 sw.Close();
 
@@ -78,31 +85,43 @@ namespace BlackLegionBot.TwitchApi
 
         public void ReadTokensFromFile()
         {
-            using var sr = new StreamReader("AuthTokens.json");
+            if (!File.Exists(AuthTokensPath))
+            {
+                var authToken = new AuthTokens()
+                {
+                    AccessToken = "",
+                    RefreshToken = ""
+                };
+                File.WriteAllText(AuthTokensPath, JsonConvert.SerializeObject(authToken));
+            }
+
+            using var sr = new StreamReader(AuthTokensPath);
             var tokens = JsonConvert.DeserializeObject<AuthTokens>(sr.ReadToEnd());
             this._tokens.AccessToken = tokens.AccessToken;
             this._tokens.RefreshToken = tokens.RefreshToken;
+            Console.WriteLine($"Tokens:\nAccessToken: {tokens.AccessToken}\nRefreshToken: {tokens.RefreshToken}");
         }
 
         public async Task Reauthorize()
         {
             var mesg = $"Please click the following url to authorize the bot: {GetAuthorizationUrl()}";
             this.WhisperNeedsToBeSend?.Invoke(mesg);
-//            this.WhisperNeedsToBeSend?.Invoke($"Please click the following url to authorize the bot: {GetAuthorizationUrl()}");
             await ListenForNewToken();
         }
 
         public async Task ListenForNewToken()
         {
             using var listener = new HttpListener();
-            listener.Prefixes.Add("http://127.0.0.1:11037/");
+            listener.Prefixes.Add("http://*:80/bot/auth/");
             listener.Start();
 
-//            await listener.BeginGetContext(new AsyncCallback(HandleAuthRequest), )
             var result = await listener.GetContextAsync();
             var requestUrl = result.Request.Url;
             if (string.IsNullOrEmpty(requestUrl.Query))
+            {
+                SendResponseOnListener(result.Response, "Something went wrong and was not able to authorize");
                 return;
+            }
             var indexOfCode = requestUrl.Query.IndexOf("code=", StringComparison.InvariantCultureIgnoreCase);
             if (indexOfCode < 0)
             {
@@ -111,6 +130,22 @@ namespace BlackLegionBot.TwitchApi
             var authToken = requestUrl.Query.Substring(indexOfCode + 5, requestUrl.Query.IndexOf("&") - 6);
             Console.WriteLine($"Token: {authToken}");
             await UseAuthorizationToken(authToken);
+            SendResponseOnListener(result.Response, "Processing authorization result");
+        }
+
+        private static void SendResponseOnListener(HttpListenerResponse response, string message)
+        {
+            var buffer = Encoding.UTF8.GetBytes(message);
+
+            response.ContentLength64 = buffer.Length;
+            response.ContentType = "text/plain";
+            response.StatusCode = (int)HttpStatusCode.OK;
+
+            // Write response
+            using var output = response.OutputStream;
+            output.Write(buffer, 0, buffer.Length);
+
+            response.Close(); // Close response
         }
 
         public string GetAccessToken() => $"Bearer {_tokens.AccessToken}";

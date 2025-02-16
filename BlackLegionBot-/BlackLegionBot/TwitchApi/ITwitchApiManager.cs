@@ -24,9 +24,14 @@ namespace BlackLegionBot.TwitchApi
         [Get("/helix/games")]
         Task<ListResultWithPagination<GameInfo>> GetGameInfo([Header("Authorization")] string authHeader, [Header("client-id")] string clientId, [Query] string id = null, [Query] string name = null);
 
-        [Get("/helix/users/follows")]
-        Task<ListResultWithPaginationWithTotal<FollowerInfo>> GetFollowerInfo([Header("Authorization")] string authHeader, [Header("client-id")] string clientId, [Query] string to_id, [Query] string from_id = null,
-            [Query] string after = null, [Query] int? first = null);
+        // [Get("/helix/users/follows")]
+        // Task<ListResultWithPaginationWithTotal<FollowerInfo>> GetFollowerInfo([Header("Authorization")] string authHeader, [Header("client-id")] string clientId, [Query] string to_id, [Query] string from_id = null,
+        //     [Query] string after = null, [Query] int? first = null);
+
+        [Get("/helix/channels/followers")]
+        Task<ListResultWithPagination<FollowerInfo>> GetFollowerInfo([Header("Authorization")] string authHeader,
+            [Header("client-id")] string clientId, [Query] string broadcaster_id, [Query] string user_id = null,
+            [Query] int? first = null, string after = null);
 
         [Get("/helix/users")]
         Task<ListResultPure<UserDetails>> GetUserDetails([Header("Authorization")] string authHeader, [Header("client-id")] string clientId, [Query] string id = null, [Query] string login = null);

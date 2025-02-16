@@ -11,7 +11,7 @@ namespace BlackLegionBot.CommandStorage
     {
         private Task<Dictionary<string, CommandDetails>> _commandsTask;
         private DateTime _dateOfRequiredRefreshUtc;
-        private BlbApiHandler _blbApi;
+        private readonly BlbApiHandler _blbApi;
         
         public CommandCache(BlbApiHandler blbApi)
         {

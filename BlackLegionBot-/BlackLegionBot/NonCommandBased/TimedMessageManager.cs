@@ -23,7 +23,7 @@ namespace BlackLegionBot.NonCommandBased
             this._sendMessage = sendMessage;
         }
 
-        public async void Start(LiveStatusManager liveStatusManager)
+        public async Task Start(LiveStatusManager liveStatusManager)
         {
             _liveStatusManager = liveStatusManager;
             RemoveAllActiveTimers();

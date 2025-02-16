@@ -10,7 +10,7 @@ namespace BlackLegionBot.TwitchApi
     public interface ITwitchAuthApi
     {
         [Post("/token")]
-        Task<AuthorizationResult> Authorize([Query] string client_id, [Query] string client_secret, [Query] string code, [Query] string grant_type = "authorization_code", [Query] string redirect_uri = "http://127.0.0.1:11037/", [Query] string force_verify = "true", [Query] string state = "JustSomeRandomState");
+        Task<AuthorizationResult> Authorize([Query] string client_id, [Query] string client_secret, [Query] string code, [Query] string grant_type = "authorization_code", [Query] string redirect_uri = "", [Query] string force_verify = "true", [Query] string state = "JustSomeRandomState");
 
         [Post("/token")]
         Task<TokenRefreshResult> RefreshTokens([Query] string client_id, [Query] string client_secret, [Query] string refresh_token, [Query] string grant_type = "refresh_token");

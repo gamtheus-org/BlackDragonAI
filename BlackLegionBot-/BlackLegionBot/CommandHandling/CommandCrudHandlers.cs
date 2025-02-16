@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using TwitchLib.Client.Events;
 
 namespace BlackLegionBot.CommandHandling
@@ -13,7 +14,7 @@ namespace BlackLegionBot.CommandHandling
             this._crudManager = crudManager;
         }
 
-        public async void Handle(OnMessageReceivedArgs messageReceivedArgs) =>
+        public async Task Handle(OnMessageReceivedArgs messageReceivedArgs) =>
             await this._crudManager.CreateCommand(messageReceivedArgs.ChatMessage.Message);
     }
 
@@ -25,7 +26,7 @@ namespace BlackLegionBot.CommandHandling
             this._crudManager = crudManager;
         }
 
-        public async void Handle(OnMessageReceivedArgs messageReceivedArgs) =>
+        public async Task Handle(OnMessageReceivedArgs messageReceivedArgs) =>
             await this._crudManager.EditCommand(messageReceivedArgs.ChatMessage.Message);
     }
 
@@ -37,7 +38,7 @@ namespace BlackLegionBot.CommandHandling
             this._crudManager = crudManager;
         }
 
-        public async void Handle(OnMessageReceivedArgs messageReceivedArgs) =>
+        public async Task Handle(OnMessageReceivedArgs messageReceivedArgs) =>
             await this._crudManager.DeleteCommand(messageReceivedArgs.ChatMessage.Message);
     }
 
@@ -49,7 +50,7 @@ namespace BlackLegionBot.CommandHandling
             this._crudManager = crudManager;
         }
 
-        public async void Handle(OnMessageReceivedArgs messageReceivedArgs) =>
+        public async Task Handle(OnMessageReceivedArgs messageReceivedArgs) =>
             await this._crudManager.AddAlias(messageReceivedArgs.ChatMessage.Message);
     }
 
@@ -61,7 +62,7 @@ namespace BlackLegionBot.CommandHandling
             this._crudManager = crudManager;
         }
 
-        public async void Handle(OnMessageReceivedArgs messageReceivedArgs) =>
+        public async Task Handle(OnMessageReceivedArgs messageReceivedArgs) =>
             await this._crudManager.DeleteAlias(messageReceivedArgs.ChatMessage.Message);
     }
 }

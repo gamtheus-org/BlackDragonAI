@@ -13,11 +13,17 @@ namespace BlackLegionBot.CommandHandling
             Bot.NamesOfAdmins.Any(name =>
                 name.Equals(chatMessage.Username, StringComparison.InvariantCultureIgnoreCase));
 
-        public static EPermission GetPermissionOfSender(this ChatMessage chatMessage) =>
-            chatMessage.IsAdmin() ? EPermission.ADMIN :
-                chatMessage.IsModerator ? EPermission.MODS :
-                chatMessage.IsSubscriber ? EPermission.SUBS : 
-                EPermission.EVERYONE;
+        public static EPermission GetPermissionOfSender(this ChatMessage chatMessage)
+        {
+            if (chatMessage.IsAdmin())
+                return EPermission.ADMIN;
+            else if (chatMessage.IsModerator)
+                return EPermission.MODS;
+            else if (chatMessage.IsSubscriber)
+                return EPermission.MODS;
+            else
+                return EPermission.EVERYONE;
+        }
 
         public static string GetCalledCommand(this ChatMessage chatMessage)
         {

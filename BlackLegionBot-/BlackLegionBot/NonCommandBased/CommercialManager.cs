@@ -31,7 +31,7 @@ namespace BlackLegionBot.NonCommandBased
                     await this._apiClient.StartCommercial(length);
                     Console.WriteLine($"Started commercial with length: {length}");
                 }
-                catch (ApiException e)
+                catch (ApiException)
                 {
                     Console.WriteLine("Something went wrong with starting the commercial");
                 }
@@ -44,7 +44,7 @@ namespace BlackLegionBot.NonCommandBased
             {
                 AutoReset = true
             };
-            this._commercialTimer.Elapsed += (sender, args) => StartCommercial(ECommercialLength.L30);
+            this._commercialTimer.Elapsed += async (sender, args) => await StartCommercial(ECommercialLength.L30);
             this._commercialTimer.Start();
         }
     }

@@ -73,7 +73,7 @@
 //        private async void SetCounter(string counterName, string message)
 //        {
 //            var amount = int.Parse(CommonRegexes.Numerics.Match(message).Value);
-//            await _blbApiHandler.UpdateDeathCount(new BLBCounter()
+//            await _blbApiHandler.UpdateDeathCount(new BlbCounter()
 //            {
 //                Deaths = amount,
 //                GameId = counterName

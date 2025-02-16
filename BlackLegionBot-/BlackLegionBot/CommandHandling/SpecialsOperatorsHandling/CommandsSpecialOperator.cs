@@ -11,7 +11,6 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
     public class CommandsSpecialOperator : ISpecialOperator
     {
         private const string Operator = "$commands";
-//        private static readonly IEnumerable<string> _customCommands = new string[] {""};
         private readonly ICommandRetriever _commandRetriever;
 
         public CommandsSpecialOperator(ICommandRetriever commandRetriever)

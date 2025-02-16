@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using BlackLegionBot.TwitchApi;
 using BlackLegionBot.TwitchApi.Models;
 using TwitchLib.Client.Events;
@@ -18,7 +19,7 @@ namespace BlackLegionBot.CommandHandling
             this._sendMessageToChannel = sendMessageToChannel;
         }
 
-        public async void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        public async Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
             if ("!settitle".Length >= messageReceivedArgs.ChatMessage.Message.Length) return;
             

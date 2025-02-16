@@ -9,20 +9,22 @@ namespace BlackLegionBot.CommandHandling
 {
     class AuthCommandHandler : ICommandHandler
     {
-        private TwitchApiManager _apiClient;
-        private Task ReauthTask;
+        private readonly TwitchApiManager _apiClient;
+        private Task _reauthTask;
 
         public AuthCommandHandler(TwitchApiManager apiClient)
         {
             this._apiClient = apiClient;
         }
 
-        public void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        public Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
-            if (ReauthTask == null)
+            if (_reauthTask == null)
             {
-                ReauthTask = this._apiClient.AuthManager.Reauthorize();
+                _reauthTask = this._apiClient.AuthManager.Reauthorize();
             }
+
+            return Task.CompletedTask;
         }
     }
 }

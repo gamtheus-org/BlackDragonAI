@@ -11,11 +11,11 @@ namespace BlackLegionBot.CommandStorage
         public event Action OnAuthenticated;
 
         private readonly IBlbApi _blbApi;
-        private readonly BLBAPIConfig _config;
+        private readonly BlbApiConfig _config;
         private string _jwt;
         private bool _hasBeenAuthenticated = false;
 
-        public BlbApiHandler(IBlbApi blbApi, BLBAPIConfig config)
+        public BlbApiHandler(IBlbApi blbApi, BlbApiConfig config)
         {
             this._blbApi = blbApi;
             this._config = config;
@@ -40,10 +40,6 @@ namespace BlackLegionBot.CommandStorage
             this._config.SetJwt(authResult.Token);
             return authResult;
         }
-
-
-        //        public Task<AuthResult> Authenticate(BLBAPIConfig config) =>
-        //            _blbApi.Authenticate(config);
 
         public Task<IEnumerable<CommandDetails>> GetAllCommands() =>
             _blbApi.GetCommands(this._jwt);
@@ -75,28 +71,28 @@ namespace BlackLegionBot.CommandStorage
         public Task DeleteTimedMessage(string command) =>
             _blbApi.DeleteTimedMessage(this._jwt, command);
 
-        public Task SubscribeToWebhook() =>
-            _blbApi.SubscribeToWebhook(this._jwt);
+        public Task SubscribeToWebhook(WebhookSubscription webhookSubscription) =>
+            _blbApi.SubscribeToWebhook(this._jwt, webhookSubscription);
 
-        public Task SubscribeToWebhookIdempotent() =>
-            _blbApi.SubscribeToWebhookIdempotent(this._jwt);
+        public Task SubscribeToWebhookIdempotent(WebhookSubscription webhookSubscription) =>
+            _blbApi.SubscribeToWebhookIdempotent(this._jwt, webhookSubscription);
 
-        public Task<BLBCounter> IncrementDeathCount(string gameId) =>
+        public Task<BlbCounter> IncrementDeathCount(string gameId) =>
             _blbApi.IncrementDeathCount(this._jwt, gameId);
 
-        public Task<BLBCounter> DecrementDeathCount(string gameId) =>
+        public Task<BlbCounter> DecrementDeathCount(string gameId) =>
             _blbApi.DecrementDeathCount(this._jwt, gameId);
 
-        public Task<BLBCounter> UpdateDeathCount(BLBCounter blbCounter, string gameId) =>
+        public Task<BlbCounter> UpdateDeathCount(BlbCounter blbCounter, string gameId) =>
             _blbApi.UpdateDeathCount(this._jwt, gameId, blbCounter);
 
-        public Task<BLBCounter> GetDeathCount(string gameId) =>
+        public Task<BlbCounter> GetDeathCount(string gameId) =>
             _blbApi.GetDeathCount(this._jwt, gameId);
 
-        public Task<IEnumerable<BLBCounter>> GetAllDeathCounts() =>
+        public Task<IEnumerable<BlbCounter>> GetAllDeathCounts() =>
             _blbApi.GetAllDeathCounts(this._jwt);
 
-        public Task<IEnumerable<BLBCounter>> GetAllCounters() =>
+        public Task<IEnumerable<BlbCounter>> GetAllCounters() =>
             _blbApi.GetCounters(this._jwt);
 
         public Task DeleteCounter(string counterName) =>

@@ -38,32 +38,43 @@ namespace BlackLegionBot
         private TwitchClient Client { get; }
         private CommandSelector CommandSelector { get; }
         private readonly BlbApiHandler _blbApi;
-//        private readonly List<TimedMessage> _timedMessages = new List<TimedMessage>();
-        private TimedMessageManager _timedMessageManager;
+        private readonly TimedMessageManager _timedMessageManager;
         private readonly WebhookHandler _webhookHandler;
         private readonly CommercialManager _commercialManager;
         private readonly LiveStatusManager _liveStatusManager;
+        private readonly ReconnectionManager _reconnectionManager;
+        private readonly TwitchAuthManager _twitchAuthManager;
 
         public Bot(BlbApiHandler blbApi, ICommandRetriever commandRetriever, TwitchApiManager twitchApi, UserInfo userInfo, 
-            IRCCredentials ircCredentials, CooldownManager cooldownManager)
+            IrcCredentials ircCredentials, CooldownManager cooldownManager, TwitchAuthManager twitchAuthManager)
         {
             this._userInfo = userInfo;
+            _twitchAuthManager = twitchAuthManager;
             this._twitchApi = twitchApi;
             _blbApi = blbApi;
 
             var creds = new ConnectionCredentials(ircCredentials.Username, ircCredentials.AccessToken);
             var webSocketClient = new WebSocketClient(new ClientOptions()
             {
-                ClientType = ClientType.Chat
+                ClientType = ClientType.Chat,
+                ReconnectionPolicy = new ReconnectionPolicy(reconnectInterval: 10, maxAttempts: 15)
             });
-            Client = new TwitchClient(webSocketClient);
+            Client = new TwitchClient(webSocketClient) {AutoReListenOnException = true};
+            Client.OnLog += (obj, args) =>
+            {
+                Console.WriteLine($"TwitchClient: {args.DateTime} | {args.Data}");
+            };
 
             this._liveStatusManager = new LiveStatusManager(_twitchApi);
             this._commercialManager = new CommercialManager(twitchApi, _liveStatusManager);
             CommandSelector = new CommandSelector(this, _twitchApi, commandRetriever, blbApi, cooldownManager, _commercialManager);
 
             // EventHandlers
-            Client.OnMessageReceived += CommandSelector.HandleCommand;
+            Client.OnMessageReceived += async (obj, args) =>
+            {
+                Console.WriteLine($"{args.ChatMessage.DisplayName}: {args.ChatMessage.Message}");
+                await CommandSelector.HandleCommand(obj, args);
+            };
             Client.OnJoinedChannel += (sender, args) => SendMessageToChannel("Joined channel");
 
             Client.Initialize(creds, this._userInfo.ChannelName);
@@ -76,27 +87,41 @@ namespace BlackLegionBot
             pubSubClient.OnFollow += viewerEventsHandlers.HandleFollowEvent;
             pubSubClient.OnChannelSubscription += viewerEventsHandlers.HandleSubEvent;
 
-            _webhookHandler = new WebhookHandler(blbApi);
+            // Connection issues
+            this._reconnectionManager = new ReconnectionManager(Client);
+            Client.OnConnected += (sender, args) => 
+            {
+                this._reconnectionManager.OnConnection(sender, args);
+                Console.WriteLine($"Joined channels: {this.Client.JoinedChannels.Count}");
+                foreach(var channel in this.Client.JoinedChannels)
+                {
+                    Console.WriteLine("Joined channels: " + channel.Channel);
+                }
+            };
+            Client.OnDisconnected += this._reconnectionManager.OnDisconnect;
+            Client.OnError += (sender, args) => { Console.WriteLine("Error occurred: \n" + args.Exception); };
+            Client.OnFailureToReceiveJoinConfirmation += (sender, args) => { Console.WriteLine("Failed to join chat"); };
+            Client.OnConnectionError += (sender, args) => { Console.WriteLine($"Connection error at {DateTime.Now}"); };
+            Client.OnLeftChannel += (sender, args) =>
+            {
+                Console.WriteLine($"Client left channel at {DateTime.UtcNow}");
+            };
+
+            _webhookHandler = new WebhookHandler(blbApi, this._reconnectionManager.DisconnectAndReconnect);
             _webhookHandler.CommandsChanged += () =>
             {
                 Console.WriteLine("Retrieving commands because webhook");
                 commandRetriever.RetrieveCommands();
             };
-            _webhookHandler.TimedMessagesChanged += () =>
+            _webhookHandler.TimedMessagesChanged += async () =>
             {
                 Console.WriteLine("Retrieving timed messages because webhook");
-                _timedMessageManager.Start(this._liveStatusManager);
+                await _timedMessageManager.Start(this._liveStatusManager);
             };
-
-            Client.OnDisconnected += (sender, args) =>
+            _webhookHandler.AuthTokenChanged += async authToken =>
             {
-                Console.WriteLine($"Twitch client has disconnected at {DateTime.Now}");
-                Client.Reconnect();
-            };
-            Client.OnConnectionError += (sender, args) => { Console.WriteLine($"Connection error at {DateTime.Now}"); };
-            Client.OnLeftChannel += (sender, args) =>
-            {
-                Console.WriteLine($"Client left channel at {DateTime.UtcNow}");
+                Console.WriteLine($"Processing auth token: {authToken}");
+                await _twitchAuthManager.UseAuthorizationToken(authToken);
             };
         }
 
@@ -107,7 +132,6 @@ namespace BlackLegionBot
 
             // twitch irc
             Client.Connect();
-//            await this._webhookHandler.Setup();
         }
 
         public void SendMessageToChannel(string message)
@@ -118,7 +142,7 @@ namespace BlackLegionBot
         }
 
         public void SendWhisperToChannel(string message) =>
-            SendWhisperToChannel(message, this._userInfo.ChannelName);
+            SendWhisperToChannel(message, "gamtheus");
         
         public void SendWhisperToChannel(string message, string whisperTo) =>
             SendMessageToChannel($"/w {whisperTo} {message}");
@@ -128,13 +152,20 @@ namespace BlackLegionBot
             Client.TimeoutUser(this._userInfo.ChannelName, user, new TimeSpan(0, duration / 60, duration % 60), message);
         }
 
+        private void Reconnect(int attempts = 0)
+        {
+            Thread.Sleep(attempts * 5 * 1000);
+            this.Client.Reconnect();
+        }
+
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             await Connect();
 
             await this._twitchApi.Initialize();
 
-            _timedMessageManager.Start(this._liveStatusManager);
+            this._webhookHandler.ListenForWebhooks();
+            await _timedMessageManager.Start(this._liveStatusManager);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

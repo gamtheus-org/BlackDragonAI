@@ -9,7 +9,7 @@ namespace BlackLegionBot.Credentials
     {
         private const string AppsettingsFileLocation = "../appsettings.json";
         
-        public BLBAPIConfig Blbapi { get; set; }
+        public BlbApiConfig BlbApi { get; set; }
 
         public static async Task<Appsettings> GetAppsettings()
         {

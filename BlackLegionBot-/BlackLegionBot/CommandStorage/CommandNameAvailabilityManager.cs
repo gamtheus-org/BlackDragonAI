@@ -8,26 +8,26 @@ namespace BlackLegionBot.CommandStorage
 {
     public static class CommandNameAvailabilityManager
     {
-        private static readonly HashSet<string> _blockList = new HashSet<string>()
+        private static readonly HashSet<string> BlockList = new HashSet<string>()
         {
             "!new", "!delete", "!edit", "!setalias", "!setgame", "!auth", "!deletealias", "settitle"
         };
-        private static readonly HashSet<string> _usedCommandsSet = new HashSet<string>();
+        private static readonly HashSet<string> UsedCommandsSet = new HashSet<string>();
 
         public static void RemoveFromBlockListBulk(IEnumerable<string> names)
         {
             foreach (var name in names)
             {
-                _blockList.Remove(name);
+                BlockList.Remove(name);
             }
         }
 
         public static bool Available(string name) => 
-            _blockList.Contains(name.ToLower()) && _usedCommandsSet.Contains(name.ToLower());
+            BlockList.Contains(name.ToLower()) && UsedCommandsSet.Contains(name.ToLower());
 
         // General
         public static void AddToBlockList(string name) =>
-            _blockList.Add(name);
+            BlockList.Add(name);
 
         public static void AddAllToBlockListBulk(IEnumerable<string> names)
         {
@@ -38,12 +38,12 @@ namespace BlackLegionBot.CommandStorage
         }
 
         public static void RemoveFromBlockList(string name) => 
-            _blockList.Remove(name);
+            BlockList.Remove(name);
 
 
         // Commands
         public static void AddCommandToBlockList(string commandName) =>
-            _usedCommandsSet.Add(commandName.ToLower());
+            UsedCommandsSet.Add(commandName.ToLower());
 
         public static void AddCommandsToBlockList(IEnumerable<string> names)
         {
@@ -54,11 +54,14 @@ namespace BlackLegionBot.CommandStorage
         }
 
         public static void RemoveCommandFromBlockList(string name) =>
-            _usedCommandsSet.Remove(name.ToLower());
+            UsedCommandsSet.Remove(name.ToLower());
 
         public static void RemoveCommandsFromBlockList(IEnumerable<string> names)
         {
-
+            foreach (var name in names)
+            {
+                RemoveCommandFromBlockList(name);
+            }
         }
     }
 }

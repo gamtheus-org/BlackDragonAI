@@ -26,11 +26,11 @@ namespace BlackLegionBot.CommandHandling
             _numericRegex = new Regex("[0-9]+");
         }
 
-        public async void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        public async Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
             var message = messageReceivedArgs.ChatMessage.Message;
             var channelInfo = await _twitchApiManager.GetChannelInfo();
-            BLBCounter blbCounter;
+            BlbCounter blbCounter;
             if (message.Contains("+"))
             {
                 try
@@ -65,7 +65,7 @@ namespace BlackLegionBot.CommandHandling
                     SendInvalidDeathCountError(messageReceivedArgs);
                     return;
                 }
-                blbCounter = await _blbApiHandler.UpdateDeathCount(new BLBCounter()
+                blbCounter = await _blbApiHandler.UpdateDeathCount(new BlbCounter()
                 {
                     Deaths = number,
                     GameId = channelInfo.GameId

@@ -18,7 +18,7 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
 
         public string GetOperatorName() => Operator;
 
-        public async Task<string> InjectOperatorAsync(string message, string username, string originalCommand)
+        public async Task<string> InjectOperatorAsync(string message, string username, string originalMessage)
         {
             if (message.Contains(Operator))
             {
