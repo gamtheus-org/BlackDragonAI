@@ -20,6 +20,9 @@ namespace BlackLegionBot.TwitchApi
         private readonly ITwitchAuthApi _twitchAuthApi;
         private readonly UserInfo _userInfo;
         private readonly AuthTokens _tokens = new AuthTokens();
+
+        private const string AuthTokensPath = "/auth/AuthTokens.json";
+        
         public event Action<string> WhisperNeedsToBeSend;
         private System.Timers.Timer _timer;
 
@@ -29,6 +32,8 @@ namespace BlackLegionBot.TwitchApi
             this._twitchAuthApi = twitchAuthApi;
             this._userInfo = userInfo;
 
+            Directory.CreateDirectory("./auth/");
+            
             ReadTokensFromFile();
         }
 
@@ -62,7 +67,7 @@ namespace BlackLegionBot.TwitchApi
                 Console.WriteLine("Writing tokens");
                 Console.WriteLine($"Access token: {_tokens.AccessToken}");
                 Console.WriteLine($"Refresh token: {_tokens.RefreshToken}");
-                await using var sw = new StreamWriter("AuthTokens.json");
+                await using var sw = new StreamWriter(AuthTokensPath);
                 await sw.WriteAsync(JsonConvert.SerializeObject(_tokens));
                 sw.Close();
 
@@ -80,18 +85,17 @@ namespace BlackLegionBot.TwitchApi
 
         public void ReadTokensFromFile()
         {
-            const string authTokensPath = "AuthTokens.json";
-            if (!File.Exists(authTokensPath))
+            if (!File.Exists(AuthTokensPath))
             {
                 var authToken = new AuthTokens()
                 {
                     AccessToken = "",
                     RefreshToken = ""
                 };
-                File.WriteAllText(authTokensPath, JsonConvert.SerializeObject(authToken));
+                File.WriteAllText(AuthTokensPath, JsonConvert.SerializeObject(authToken));
             }
 
-            using var sr = new StreamReader(authTokensPath);
+            using var sr = new StreamReader(AuthTokensPath);
             var tokens = JsonConvert.DeserializeObject<AuthTokens>(sr.ReadToEnd());
             this._tokens.AccessToken = tokens.AccessToken;
             this._tokens.RefreshToken = tokens.RefreshToken;
