@@ -94,6 +94,7 @@ namespace BlackLegionBot.CommandStorage
             this.Username = config.GetValue<string>("username");
             this.Password = config.GetValue<string>("password");
             this.Url = config.GetValue<string>("url");
+            Console.WriteLine($"Username: {Username}, Password: {Password}, Url: {Url}");
         }
 
         public void SetJwt(string jwt)
