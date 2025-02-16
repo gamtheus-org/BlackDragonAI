@@ -9,21 +9,17 @@ namespace BlackLegionBot.TwitchApi.Models
 {
     public class FollowerInfo
     {
-        [JsonProperty("from_id")]
-        [JsonPropertyName("from_id")]
-        public string FromId { get; set; }
+        [JsonProperty("user_id")]
+        [JsonPropertyName("user_id")]
+        public string UserId { get; set; }
 
-        [JsonProperty("from_name")]
-        [JsonPropertyName("from_name")]
-        public string FromName { get; set; }
+        [JsonProperty("user_name")]
+        [JsonPropertyName("user_name")]
+        public string UserName { get; set; }
 
-        [JsonProperty("to_id")]
-        [JsonPropertyName("to_id")]
-        public string ToId { get; set; }
-
-        [JsonProperty("to_name")]
-        [JsonPropertyName("to_name")]
-        public string ToName { get; set; }
+        [JsonProperty("user_login")]
+        [JsonPropertyName("user_login")]
+        public string UserLogin { get; set; }
 
         [JsonProperty("followed_at")]
         [JsonPropertyName("followed_at")]
