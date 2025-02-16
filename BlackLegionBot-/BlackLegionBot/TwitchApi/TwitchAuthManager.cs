@@ -21,7 +21,7 @@ namespace BlackLegionBot.TwitchApi
         private readonly UserInfo _userInfo;
         private readonly AuthTokens _tokens = new AuthTokens();
 
-        private const string AuthTokensPath = "/auth/AuthTokens.json";
+        private const string AuthTokensPath = "./auth/AuthTokens.json";
         
         public event Action<string> WhisperNeedsToBeSend;
         private System.Timers.Timer _timer;
