@@ -30,7 +30,7 @@ namespace BlackLegionBot.TwitchApi
 
         [Get("/helix/channels/followers")]
         Task<ListResultWithPagination<FollowerInfo>> GetFollowerInfo([Header("Authorization")] string authHeader,
-            [Header("client-id")] string clientId, [Query] string broadcast_id, [Query] string user_id = null,
+            [Header("client-id")] string clientId, [Query] string broadcaster_id, [Query] string user_id = null,
             [Query] int? first = null, string after = null);
 
         [Get("/helix/users")]
