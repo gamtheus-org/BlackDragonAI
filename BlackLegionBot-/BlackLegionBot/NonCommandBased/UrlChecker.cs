@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Timers;
 using BlackLegionBot.CommandHandling;
 using BlackLegionBot.CommandStorage;
@@ -24,8 +25,10 @@ namespace BlackLegionBot.NonCommandBased
             EPermission.SUBS.HasEqualOrHigherPermission(chatMessage.GetPermissionOfSender()) || 
             _peopleWithPermissionToSendMessageWithUrl.Remove(chatMessage.Username.ToLower());
 
-        public void HandleValidationError(ChatMessage chatMessage) =>
-            this._bot.TimeoutUser(chatMessage.Username, 1, "Usage of URIs is not allowed");
+        public async Task HandleValidationErrorAsync(ChatMessage chatMessage)
+        {
+            await _bot.TimeoutUserInChannelAsync(chatMessage.Username, new TimeSpan(0, 0, 0, seconds: 1));
+        }
 
         private static bool ContainsUrl(string message) =>
             new Regex(".*([.]?[-a-zA-Z0-9\\\\@:%_+~#=]|)+([-a-zA-Z0-9\\\\@:%_+~#=]){1,254}[.][a-zA-z0-9]{2,6}.*").IsMatch(message);

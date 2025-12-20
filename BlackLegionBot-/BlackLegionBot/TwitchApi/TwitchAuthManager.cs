@@ -23,7 +23,7 @@ namespace BlackLegionBot.TwitchApi
 
         private const string AuthTokensPath = "./auth/AuthTokens.json";
         
-        public event Action<string> WhisperNeedsToBeSend;
+        public event Func<string, Task> WhisperNeedsToBeSendAsync;
         private System.Timers.Timer _timer;
 
 
@@ -105,7 +105,10 @@ namespace BlackLegionBot.TwitchApi
         public async Task Reauthorize()
         {
             var mesg = $"Please click the following url to authorize the bot: {GetAuthorizationUrl()}";
-            this.WhisperNeedsToBeSend?.Invoke(mesg);
+            if (WhisperNeedsToBeSendAsync is not null)
+            {
+                await WhisperNeedsToBeSendAsync(mesg);
+            }
             await ListenForNewToken();
         }
 
@@ -123,9 +126,9 @@ namespace BlackLegionBot.TwitchApi
                 return;
             }
             var indexOfCode = requestUrl.Query.IndexOf("code=", StringComparison.InvariantCultureIgnoreCase);
-            if (indexOfCode < 0)
+            if (indexOfCode < 0 && WhisperNeedsToBeSendAsync is not null)
             {
-                WhisperNeedsToBeSend?.Invoke("Something went wrong with the attempt to re-authorize.");
+                await WhisperNeedsToBeSendAsync("Something went wrong with the attempt to re-authorize.");
             }
             var authToken = requestUrl.Query.Substring(indexOfCode + 5, requestUrl.Query.IndexOf("&") - 6);
             Console.WriteLine($"Token: {authToken}");

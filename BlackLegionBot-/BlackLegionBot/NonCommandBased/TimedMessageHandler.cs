@@ -14,13 +14,13 @@ namespace BlackLegionBot.NonCommandBased
         private readonly Timer _offsetTimer;
         private readonly LiveStatusManager _liveStatusManager;
 
-        public TimedMessageHandler(int secondsBetweenEvents, string message, Action<string> sendMessage, LiveStatusManager liveStatusManager, int offsetInMinutes = 0) : 
-            this(0, secondsBetweenEvents, message, sendMessage,  liveStatusManager, offsetInMinutes)
+        public TimedMessageHandler(int secondsBetweenEvents, string message, Func<string, Task> sendMessageAsync, LiveStatusManager liveStatusManager, int offsetInMinutes = 0) : 
+            this(0, secondsBetweenEvents, message, sendMessageAsync,  liveStatusManager, offsetInMinutes)
         {
             
         }
 
-        public TimedMessageHandler(int minutesBetweenEvents, int secondsBetweenEvents, string message, Action<string> sendMessage, LiveStatusManager liveStatusManager, int offsetInMinutes = 0)
+        public TimedMessageHandler(int minutesBetweenEvents, int secondsBetweenEvents, string message, Func<string, Task> sendMessageAsync, LiveStatusManager liveStatusManager, int offsetInMinutes = 0)
         {
             this._liveStatusManager = liveStatusManager;
             // Sets up the timer
@@ -28,7 +28,7 @@ namespace BlackLegionBot.NonCommandBased
             {
                 AutoReset = true
             };
-            this._timer.Elapsed += (sender, args) => SendMessage(sendMessage, message);
+            this._timer.Elapsed += (sender, args) => SendMessageAsync(sendMessageAsync, message);
 
 
             if (offsetInMinutes > 0)
@@ -38,12 +38,12 @@ namespace BlackLegionBot.NonCommandBased
                 {
                     AutoReset = false
                 };
-                this._offsetTimer.Elapsed += (sender, args) => StartTimer(sendMessage, message);
+                this._offsetTimer.Elapsed += (sender, args) => StartTimer(sendMessageAsync, message);
                 this._offsetTimer.Start();
             }
             else
             {
-                StartTimer(sendMessage, message);
+                StartTimer(sendMessageAsync, message);
             }
         }
 
@@ -54,17 +54,17 @@ namespace BlackLegionBot.NonCommandBased
             this._timer.Dispose();
         }
 
-        public void StartTimer(Action<string> sendMessage, string message)
+        private async Task StartTimer(Func<string, Task>  sendMessageAsync, string message)
         {
             this._timer.Start();
-            SendMessage(sendMessage, message);
+            await SendMessageAsync(sendMessageAsync, message);
         }
 
-        private void SendMessage(Action<string> sendMessage, string message)
+        private async Task SendMessageAsync(Func<string, Task> sendMessageAsync, string message)
         {
             if (_liveStatusManager.IsLive().Result)
             {
-                sendMessage(message);
+                await sendMessageAsync(message);
             }
         }
     }

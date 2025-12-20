@@ -15,14 +15,14 @@ namespace BlackLegionBot.CommandHandling
     {
         private readonly BlbApiHandler _blbApiHandler;
         private readonly TwitchApiManager _twitchApiManager;
-        private readonly Action<string> _sendMessage;
+        private readonly Func<string, Task> _sendMessageAsync;
         private readonly Regex _numericRegex;
 
-        public DeathsCommandHandler(BlbApiHandler blbApiHandler, TwitchApiManager twitchApiManager, Action<string> sendMessage)
+        public DeathsCommandHandler(BlbApiHandler blbApiHandler, TwitchApiManager twitchApiManager, Func<string, Task> sendMessageAsync)
         {
             _blbApiHandler = blbApiHandler;
             _twitchApiManager = twitchApiManager;
-            _sendMessage = sendMessage;
+            _sendMessageAsync = sendMessageAsync;
             _numericRegex = new Regex("[0-9]+");
         }
 
@@ -39,7 +39,7 @@ namespace BlackLegionBot.CommandHandling
                 }
                 catch (ApiException)
                 {
-                    SendInvalidDeathCountError(messageReceivedArgs);
+                    await SendInvalidDeathCountErrorAsync(messageReceivedArgs);
                     return;
                 }
             }
@@ -51,7 +51,7 @@ namespace BlackLegionBot.CommandHandling
                 }
                 catch (ApiException)
                 {
-                    SendInvalidDeathCountError(messageReceivedArgs);
+                    await SendInvalidDeathCountErrorAsync(messageReceivedArgs);
                     return;
                 }
             }
@@ -62,7 +62,7 @@ namespace BlackLegionBot.CommandHandling
 
                 if (number < 0)
                 {
-                    SendInvalidDeathCountError(messageReceivedArgs);
+                    await SendInvalidDeathCountErrorAsync(messageReceivedArgs);
                     return;
                 }
                 blbCounter = await _blbApiHandler.UpdateDeathCount(new BlbCounter()
@@ -73,7 +73,7 @@ namespace BlackLegionBot.CommandHandling
             }
 
             var gameInfo = await _twitchApiManager.GetGameInfo(channelInfo.GameId);
-            _sendMessage($"BlackDragon is {blbCounter.Deaths} keer dood gegaan in {gameInfo.Name}");
+            await _sendMessageAsync($"BlackDragon has died {blbCounter.Deaths} times in {gameInfo.Name}");
         }
 
         private bool TryExtractNumber(string message, out int number)
@@ -89,7 +89,9 @@ namespace BlackLegionBot.CommandHandling
             return true;
         }
 
-        private void SendInvalidDeathCountError(OnMessageReceivedArgs messageReceivedArgs) => 
-            _sendMessage($"{messageReceivedArgs.ChatMessage.Username}, het aantal deaths mag niet onder 0 zijn");
+        private async Task SendInvalidDeathCountErrorAsync(OnMessageReceivedArgs messageReceivedArgs)
+        {
+            await _sendMessageAsync($"{messageReceivedArgs.ChatMessage.Username}, the number of deaths cannot be less than 0");
+        }
     }
 }

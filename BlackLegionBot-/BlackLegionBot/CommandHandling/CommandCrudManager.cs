@@ -12,13 +12,13 @@ namespace BlackLegionBot.CommandHandling
     public class CommandCrudManager
     {
         public event Action RefreshOfCommandsRequired;
-        private readonly Action<string> _sendMessageToChannel;
+        private readonly Func<string, Task> _sendMessageToChannelAsync;
 
         private readonly BlbApiHandler _apiHandler;
-        public CommandCrudManager(BlbApiHandler apiHandler, Action<string> sendMessageToChannel)
+        public CommandCrudManager(BlbApiHandler apiHandler, Func<string, Task> sendMessageToChannelAsync)
         {
             this._apiHandler = apiHandler;
-            this._sendMessageToChannel = sendMessageToChannel;
+            this._sendMessageToChannelAsync = sendMessageToChannelAsync;
         }
 
         public async Task CreateCommand(string message)
@@ -28,18 +28,18 @@ namespace BlackLegionBot.CommandHandling
                 var commandDetails = ConvertMessageToObject(message, CrudType.CREATE);
                 if (CommandNameAvailabilityManager.Available(commandDetails.Command))
                 {
-                    _sendMessageToChannel("The name, which was used, is reserved.");
+                    await _sendMessageToChannelAsync("The name, which was used, is reserved.");
                     return;
                 }
                 await this._apiHandler.CreateCommand(commandDetails);
-                _sendMessageToChannel($"The command {commandDetails.Command} has been successfully created");
+                await _sendMessageToChannelAsync($"The command {commandDetails.Command} has been successfully created");
                 RefreshOfCommandsRequired?.Invoke();
                 CommandNameAvailabilityManager.AddToBlockList(commandDetails.Command);
             }
             catch (ApiException originalException)
             {
                 var apiError = originalException.ToBlbApiError();
-                _sendMessageToChannel($"Something went wrong with the following message: {apiError.Message}");
+                await _sendMessageToChannelAsync($"Something went wrong with the following message: {apiError.Message}");
             }
             catch (Exception e)
             {
@@ -54,17 +54,17 @@ namespace BlackLegionBot.CommandHandling
                 var commandDetails = ConvertMessageToObject(message, CrudType.EDIT);
                 if (CommandNameAvailabilityManager.Available(commandDetails.Command))
                 {
-                    _sendMessageToChannel("The name, which was used, is reserved.");
+                    await _sendMessageToChannelAsync("The name, which was used, is reserved.");
                     return;
                 }
                 await this._apiHandler.EditCommand(commandDetails);
-                _sendMessageToChannel($"The command {commandDetails.Command} has been successfully edited");
+                await _sendMessageToChannelAsync($"The command {commandDetails.Command} has been successfully edited");
                 RefreshOfCommandsRequired?.Invoke();
             }
             catch (ApiException originalException)
             {
                 var apiError = originalException.ToBlbApiError();
-                _sendMessageToChannel($"Something went wrong with the following message: {apiError.Message}");
+                await _sendMessageToChannelAsync($"Something went wrong with the following message: {apiError.Message}");
             }
             catch (Exception e)
             {
@@ -84,14 +84,14 @@ namespace BlackLegionBot.CommandHandling
                 try
                 {
                     await this._apiHandler.AddAlias(commandToMakeAliasOf.Substring(1), alias);
-                    _sendMessageToChannel($"The alias {alias} for the command {commandToMakeAliasOf} has been successfully created");
+                    await _sendMessageToChannelAsync($"The alias {alias} for the command {commandToMakeAliasOf} has been successfully created");
                     RefreshOfCommandsRequired?.Invoke();
                     CommandNameAvailabilityManager.AddCommandToBlockList(alias);
                 }
                 catch (ApiException originalException)
                 {
                     var apiError = originalException.ToBlbApiError();
-                    _sendMessageToChannel($"Something went wrong with the following message: {apiError.Message}");
+                    await _sendMessageToChannelAsync($"Something went wrong with the following message: {apiError.Message}");
                 }
             }
         }
@@ -102,13 +102,13 @@ namespace BlackLegionBot.CommandHandling
             {
                 var commandToDelete = message.Substring(message.LastIndexOf('!') + 1).TrimEnd();
                 await this._apiHandler.DeleteCommand(commandToDelete);
-                _sendMessageToChannel($"The command {commandToDelete} has been successfully deleted");
+                await _sendMessageToChannelAsync($"The command {commandToDelete} has been successfully deleted");
                 RefreshOfCommandsRequired?.Invoke();
             }
             catch (ApiException originalException)
             {
                 var apiError = originalException.ToBlbApiError();
-                _sendMessageToChannel($"Something went wrong with the following message: {apiError.Message}");
+                await _sendMessageToChannelAsync($"Something went wrong with the following message: {apiError.Message}");
             }
             catch (Exception e)
             {
@@ -125,13 +125,13 @@ namespace BlackLegionBot.CommandHandling
                 try
                 {
                     await this._apiHandler.DeleteAlias(alias.Substring(1));
-                    _sendMessageToChannel($"The alias {alias} has been successfully deleted");
+                    await _sendMessageToChannelAsync($"The alias {alias} has been successfully deleted");
                     RefreshOfCommandsRequired?.Invoke();
                 }
                 catch (ApiException originalException)
                 {
                     var apiError = originalException.ToBlbApiError();
-                    _sendMessageToChannel($"Something went wrong with the following message: {apiError.Message}");
+                    await _sendMessageToChannelAsync($"Something went wrong with the following message: {apiError.Message}");
                 }
             }
         }

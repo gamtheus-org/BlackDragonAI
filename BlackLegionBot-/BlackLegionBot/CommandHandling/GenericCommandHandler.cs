@@ -33,7 +33,7 @@ namespace BlackLegionBot.CommandHandling
             {
                 _cooldownManager.StartCooldown(command.OriginalCommand);
                 var messageToSend = await _operatorHandler.InjectOperators(command.Message, chatMessage.Username, messageReceivedArgs.ChatMessage.Message);
-                Bot.SendMessageToChannel(messageToSend);
+                Bot.SendMessageToChannelAsync(messageToSend);
             }
         }
     }

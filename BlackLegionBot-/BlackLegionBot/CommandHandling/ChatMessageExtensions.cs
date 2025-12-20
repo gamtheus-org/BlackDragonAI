@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using BlackLegionBot.CommandStorage;
+using TwitchLib.Client.Enums;
 using TwitchLib.Client.Models;
 
 namespace BlackLegionBot.CommandHandling
@@ -17,9 +18,9 @@ namespace BlackLegionBot.CommandHandling
         {
             if (chatMessage.IsAdmin())
                 return EPermission.ADMIN;
-            else if (chatMessage.IsModerator)
+            else if (chatMessage.UserDetail.IsModerator)
                 return EPermission.MODS;
-            else if (chatMessage.IsSubscriber)
+            else if (chatMessage.UserDetail.IsSubscriber)
                 return EPermission.MODS;
             else
                 return EPermission.EVERYONE;

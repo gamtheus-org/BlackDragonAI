@@ -11,17 +11,20 @@ namespace BlackLegionBot.CommandHandling
     class TitleSetterHandler : ICommandHandler
     {
         private readonly TwitchApiManager _apiClient;
-        private readonly Action<string> _sendMessageToChannel;
+        private readonly Func<string, Task> _sendMessageToChannelAsync;
 
-        public TitleSetterHandler(TwitchApiManager apiClient, Action<string> sendMessageToChannel)
+        public TitleSetterHandler(TwitchApiManager apiClient, Func<string, Task> sendMessageToChannelAsync)
         {
             this._apiClient = apiClient;
-            this._sendMessageToChannel = sendMessageToChannel;
+            this._sendMessageToChannelAsync = sendMessageToChannelAsync;
         }
 
         public async Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
-            if ("!settitle".Length >= messageReceivedArgs.ChatMessage.Message.Length) return;
+            if ("!settitle".Length >= messageReceivedArgs.ChatMessage.Message.Length)
+            {
+                return;
+            }
             
             var title = messageReceivedArgs.ChatMessage.Message.Substring("!settitle ".Length).TrimEnd();
             var channelInfo = new ChannelInfo()
@@ -40,7 +43,7 @@ namespace BlackLegionBot.CommandHandling
                 return;
             }
             
-            _sendMessageToChannel($"De ingestelde titel is veranderd naar {title}");
+            await _sendMessageToChannelAsync($"De ingestelde titel is veranderd naar {title}");
         }
     }
 }

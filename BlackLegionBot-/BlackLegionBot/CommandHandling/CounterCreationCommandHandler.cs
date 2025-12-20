@@ -38,7 +38,7 @@ namespace BlackLegionBot.CommandHandling
             };
             await this._blbApi.UpdateDeathCount(counter, commandName);
             this.OnCounterCreated?.Invoke(commandName);
-            this._bot.SendMessageToChannel($"De counter {counter.GameId} is aangemaakt!");
+            this._bot.SendMessageToChannelAsync($"De counter {counter.GameId} is aangemaakt!");
         }
     }
 
@@ -66,7 +66,7 @@ namespace BlackLegionBot.CommandHandling
             // Call blbApi
             await this._blbApi.DeleteCounter(commandName);
             this.OnCounterDeleted?.Invoke(commandName);
-            this._bot.SendMessageToChannel($"De counter {commandName} is verwijderd");
+            this._bot.SendMessageToChannelAsync($"De counter {commandName} is verwijderd");
         }
     }
 
@@ -149,7 +149,7 @@ namespace BlackLegionBot.CommandHandling
                 }
             }
 
-            this._bot.SendMessageToChannel($"De {counterName} teller staat op {count}!");
+            this._bot.SendMessageToChannelAsync($"De {counterName} teller staat op {count}!");
         }
     }
 }

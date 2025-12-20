@@ -43,19 +43,19 @@ namespace BlackLegionBot.CommandHandling
 
             this.GenericCommandHandler = new GenericCommandHandler(commandRetriever, Bot, TwitchApi, cooldownManager, blbApiClient);
             this._authCommandHandler = new AuthCommandHandler(twitchApi);
-            var crudManager = new CommandCrudManager(blbApiClient, Bot.SendMessageToChannel);
+            var crudManager = new CommandCrudManager(blbApiClient, Bot.SendMessageToChannelAsync);
             crudManager.RefreshOfCommandsRequired += commandRetriever.RetrieveCommands;
             this._commandCreateHandler = new CommandCreateHandler(crudManager);
             this._commandEditHandler = new CommandEditHandler(crudManager);
             this._commandDeletionHandler = new CommandDeletionHandler(crudManager);
             this._commandAliasCreationHandler = new CommandAliasCreationHandler(crudManager);
             this._commandAliasDeletionHandler = new CommandAliasDeletionHandler(crudManager);
-            this._gameSetterHandler = new GameSetterHandler(twitchApi, Bot.SendMessageToChannel);
-            this._titleSetterHandler = new TitleSetterHandler(twitchApi, Bot.SendMessageToChannel);
-            this._commercialStarterHandler = new CommercialStarterHandler(commercialManager, Bot.SendMessageToChannel);
+            this._gameSetterHandler = new GameSetterHandler(twitchApi, Bot.SendMessageToChannelAsync);
+            this._titleSetterHandler = new TitleSetterHandler(twitchApi, Bot.SendMessageToChannelAsync);
+            this._commercialStarterHandler = new CommercialStarterHandler(commercialManager, Bot.SendMessageToChannelAsync);
             this._permissionHandler = new PermissionHandler(urlChecker, bot);
-            this._deathsCommandHandler = new DeathsCommandHandler(blbApiClient, twitchApi, Bot.SendMessageToChannel);
-            this._twitchApiOAuthSharer = new TwitchApiOAuthShareHandler(twitchApi, mesg => Bot.SendWhisperToChannel(mesg, "gamtheus"));
+            this._deathsCommandHandler = new DeathsCommandHandler(blbApiClient, twitchApi, Bot.SendMessageToChannelAsync);
+            this._twitchApiOAuthSharer = new TwitchApiOAuthShareHandler(twitchApi, mesg => Bot.SendWhisperToChannelAsync(mesg, "gamtheus"));
             this._counterCreationCommandHandler = new CounterCreationCommandHandler(blbApiClient, bot);
             this._counterDeletionCommandHandler = new CounterDeletionCommandHandler(blbApiClient, bot);
             this._counterRetrievalCommandHandler = new CounterRetrievalCommandHandler(blbApiClient, bot);
@@ -70,7 +70,7 @@ namespace BlackLegionBot.CommandHandling
                 var failedValidator = this._messageValidators.FirstOrDefault(mv => !mv.Validate(messageReceivedArgs.ChatMessage));
                 if (failedValidator != null)
                 {
-                    failedValidator.HandleValidationError(messageReceivedArgs.ChatMessage);
+                    await failedValidator.HandleValidationErrorAsync(messageReceivedArgs.ChatMessage);
                     return;
                 }
             }
@@ -86,7 +86,7 @@ namespace BlackLegionBot.CommandHandling
             {
                 Console.WriteLine("Error!");
                 Console.WriteLine($"Error: {e.Message}");
-                this.Bot.SendWhisperToChannel($"Message: {e.Message} \nStackTrace: {e.StackTrace}", "gamtheus");
+                await Bot.SendWhisperToChannelAsync($"Message: {e.Message} \nStackTrace: {e.StackTrace}", "gamtheus");
             }
         }
 

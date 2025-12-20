@@ -8,6 +8,7 @@ using BlackLegionBot.CommandHandling.SpecialsOperatorsHandling;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Communication.Events;
+using OnConnectedEventArgs = TwitchLib.Client.Events.OnConnectedEventArgs;
 
 namespace BlackLegionBot.NonCommandBased
 {
@@ -18,8 +19,8 @@ namespace BlackLegionBot.NonCommandBased
         private const int ReconnectWaitInMs = 5000;
         private Timer _timerToStartTimer;
         private Timer _reconnectTimer;
-        private readonly Func<bool> _connect;
-        private readonly Action _disconnect;
+        private readonly Func<Task<bool>> _connectAsync;
+        private readonly Func<Task> _disconnectAsync;
         private readonly TwitchClient _twitchClient;
 
         public ReconnectionManager(Action reconnect)
@@ -30,8 +31,8 @@ namespace BlackLegionBot.NonCommandBased
         public ReconnectionManager(TwitchClient client)
         {
             this._twitchClient = client;
-            this._connect = client.Connect;
-            this._disconnect = client.Disconnect;
+            this._connectAsync = client.ConnectAsync;
+            this._disconnectAsync = client.DisconnectAsync;
 
             var now = DateTime.Now;
             this._reconnectTimer = new Timer(Math.Abs((now.AddDays(1) - now).TotalMilliseconds))
@@ -40,7 +41,7 @@ namespace BlackLegionBot.NonCommandBased
             };
             this._reconnectTimer.Elapsed += (obj, args) =>
             {
-                this.DisconnectAndReconnect();
+                this.DisconnectAndReconnectAsync();
             };
 
             var timeTo0800 = new DateTime(now.Year, now.Month, now.Day, 8, 0, 0).AddDays(1) - now;
@@ -55,22 +56,22 @@ namespace BlackLegionBot.NonCommandBased
             this._timerToStartTimer.Start();
         }
 
-        public void DisconnectAndReconnect()
+        public async Task DisconnectAndReconnectAsync()
         {
-            this._disconnect();
+            await this._disconnectAsync();
             System.Threading.Thread.Sleep(1000);
-            this._connect();
+            await this._connectAsync();
             System.Threading.Thread.Sleep(1000);
-            this._twitchClient.JoinChannel("BlackDragon");
+            await this._twitchClient.JoinChannelAsync("BlackDragon");
         }
 
-        public void OnConnection(object sender, OnConnectedArgs args)
+        public void OnConnection(object sender, OnConnectedEventArgs args)
         {
             Console.WriteLine("Bot has successfully connected with Twitch chat");
             // this._reconnectionAttempts = 0;
         }
 
-        public void OnDisconnect(object sender, OnDisconnectedEventArgs args)
+        public Task OnDisconnectAsync(object sender, OnDisconnectedArgs args)
         {
             Console.WriteLine("Bot has been disconnected from Twitch chat");
             // Console.WriteLine($"Wait until reconnect: {_reconnectionAttempts * ReconnectWaitInMs / 1000} seconds");
@@ -78,6 +79,7 @@ namespace BlackLegionBot.NonCommandBased
             // this._reconnectionAttempts++;
             // Console.WriteLine($"Trying to reconnect. Attempt: {this._reconnectionAttempts}");
             // this._reconnect();
+            return Task.CompletedTask;
         }
     }
 }

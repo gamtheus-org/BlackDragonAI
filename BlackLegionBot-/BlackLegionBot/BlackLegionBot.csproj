@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
-        <LangVersion>9</LangVersion>
+        <TargetFramework>net9.0</TargetFramework>
+        <LangVersion>Latest</LangVersion>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
@@ -19,13 +19,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0-preview.1.20120.4" />
-      <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.9" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
+      <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
       <PackageReference Include="MongoDB.Bson" Version="2.10.2" />
-      <PackageReference Include="refit" Version="7.2.22" />
-      <PackageReference Include="Refit.HttpClientFactory" Version="7.2.22" />
-      <PackageReference Include="TwitchLib" Version="3.2.0" />
-      <PackageReference Include="TwitchLib.Client" Version="3.2.2" />
+      <PackageReference Include="refit" Version="9.0.2" />
+      <PackageReference Include="Refit.HttpClientFactory" Version="9.0.2" />
+      <PackageReference Include="TwitchLib" Version="3.5.3" />
+      <PackageReference Include="TwitchLib.Client" Version="4.0.1" />
     </ItemGroup>
 
     <ItemGroup>
