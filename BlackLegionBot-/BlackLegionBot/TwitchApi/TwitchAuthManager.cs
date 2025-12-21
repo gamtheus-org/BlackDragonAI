@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading;
+using System.Text.Json;
 using System.Threading.Tasks;
+using System.Timers;
 using BlackLegionBot.CommandHandling;
 using BlackLegionBot.TwitchApi.Models;
-using Newtonsoft.Json;
 using Refit;
 
 namespace BlackLegionBot.TwitchApi
@@ -24,7 +24,7 @@ namespace BlackLegionBot.TwitchApi
         private const string AuthTokensPath = "./auth/AuthTokens.json";
         
         public event Func<string, Task> WhisperNeedsToBeSendAsync;
-        private System.Timers.Timer _timer;
+        private Timer _timer;
 
 
         public TwitchAuthManager(ITwitchAuthApi twitchAuthApi, UserInfo userInfo)
@@ -43,7 +43,7 @@ namespace BlackLegionBot.TwitchApi
             {
                 Console.WriteLine($"Apply code: {code}");
                 var authResult = await this._twitchAuthApi.Authorize(this._userInfo.ClientId, this._userInfo.Secret, code, redirect_uri: RedirectUrl);
-                Console.WriteLine($"Get access token and refresh token result: {JsonConvert.SerializeObject(authResult)}");
+                Console.WriteLine($"Get access token and refresh token result: {JsonSerializer.Serialize(authResult)}");
 
                 _tokens.RefreshToken = authResult.RefreshToken;
                 Console.WriteLine($"Refresh token: {authResult.RefreshToken}");
@@ -68,10 +68,10 @@ namespace BlackLegionBot.TwitchApi
                 Console.WriteLine($"Access token: {_tokens.AccessToken}");
                 Console.WriteLine($"Refresh token: {_tokens.RefreshToken}");
                 await using var sw = new StreamWriter(AuthTokensPath);
-                await sw.WriteAsync(JsonConvert.SerializeObject(_tokens));
+                await sw.WriteAsync(JsonSerializer.Serialize(_tokens));
                 sw.Close();
 
-                _timer = new System.Timers.Timer(tokenRefreshResult.ExpiresIn * 1000);
+                _timer = new Timer(tokenRefreshResult.ExpiresIn * 1000);
                 this._timer.Elapsed += (obj, args) => RefreshToken().RunSynchronously();
                 this._timer.AutoReset = false;
                 this._timer.Enabled = true;
@@ -92,11 +92,11 @@ namespace BlackLegionBot.TwitchApi
                     AccessToken = "",
                     RefreshToken = ""
                 };
-                File.WriteAllText(AuthTokensPath, JsonConvert.SerializeObject(authToken));
+                File.WriteAllText(AuthTokensPath, JsonSerializer.Serialize(authToken));
             }
 
             using var sr = new StreamReader(AuthTokensPath);
-            var tokens = JsonConvert.DeserializeObject<AuthTokens>(sr.ReadToEnd());
+            var tokens = JsonSerializer.Deserialize<AuthTokens>(sr.ReadToEnd());
             this._tokens.AccessToken = tokens.AccessToken;
             this._tokens.RefreshToken = tokens.RefreshToken;
             Console.WriteLine($"Tokens:\nAccessToken: {tokens.AccessToken}\nRefreshToken: {tokens.RefreshToken}");

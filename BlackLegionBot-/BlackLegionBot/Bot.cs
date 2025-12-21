@@ -12,17 +12,12 @@ using BlackLegionBot.Helpers;
 using BlackLegionBot.NonCommandBased;
 using BlackLegionBot.TwitchApi;
 using Microsoft.Extensions.Hosting;
-using TwitchLib.Api;
-using TwitchLib.Api.Core;
-using TwitchLib.Api.Core.Enums;
-using TwitchLib.Api.Interfaces;
 using TwitchLib.Client;
 using TwitchLib.Client.Extensions;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Enums;
 using TwitchLib.Communication.Models;
-using TwitchLib.PubSub;
 
 namespace BlackLegionBot
 {
@@ -77,8 +72,8 @@ namespace BlackLegionBot
             _timedMessageManager = new TimedMessageManager(commandRetriever, blbApi, SendMessageToChannelAsync);
 
             // var viewerEventsHandlers = new ViewerEventsHandlers(SendMessageToChannelAsync);
-            var pubSubClient = new TwitchPubSub();
-            pubSubClient.Connect();
+            // var pubSubClient = new TwitchPubSub();
+            // pubSubClient.Connect();
             // pubSubClient.OnFollow += viewerEventsHandlers.HandleFollowEvent;
             // pubSubClient.OnChannelSubscription += viewerEventsHandlers.HandleSubEvent;
 

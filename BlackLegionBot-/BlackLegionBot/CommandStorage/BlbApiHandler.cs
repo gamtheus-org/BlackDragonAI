@@ -1,8 +1,8 @@
 ﻿using System;
-using Newtonsoft.Json;
-using Refit;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Refit;
 
 namespace BlackLegionBot.CommandStorage
 {
@@ -105,6 +105,6 @@ namespace BlackLegionBot.CommandStorage
     public static class BlbApiExtensions
     {
         public static ApiError ToBlbApiError(this ApiException apiException) =>
-            JsonConvert.DeserializeObject<ApiError>(apiException.Content);
+            JsonSerializer.Deserialize<ApiError>(apiException.Content);
     }
 }

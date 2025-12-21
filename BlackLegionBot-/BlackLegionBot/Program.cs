@@ -8,7 +8,6 @@ using BlackLegionBot.TwitchApi;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using Refit;
 
 namespace BlackLegionBot
@@ -29,7 +28,7 @@ namespace BlackLegionBot
 
                     // configs
                     var blbApiConfig = new BlbApiConfig(config.GetSection("Blbapi"));
-                    Console.WriteLine($"Config: {JsonConvert.SerializeObject(blbApiConfig)}");
+                    Console.WriteLine($"Config: {JsonSerializer.Serialize(blbApiConfig)}");
                     services.AddSingleton<BlbApiConfig>(blbApiConfig);
                     var ircCredentials = new IrcCredentials(config.GetSection("Irc"));
                     services.AddSingleton(ircCredentials);

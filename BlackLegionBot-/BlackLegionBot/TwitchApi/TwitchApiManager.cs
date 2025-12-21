@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using BlackLegionBot.CommandHandling;
 using BlackLegionBot.NonCommandBased;
 using BlackLegionBot.TwitchApi.Models;
-using Newtonsoft.Json;
-using Refit;
 
 namespace BlackLegionBot.TwitchApi
 {
@@ -65,7 +63,7 @@ namespace BlackLegionBot.TwitchApi
         {
             var channelInfoList = await this._apiClient.GetChannelInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId,
                 this._userInfo.UserId);
-            Console.WriteLine($"Channel info result: {JsonConvert.SerializeObject(channelInfoList)}");
+            Console.WriteLine($"Channel info result: {JsonSerializer.Serialize(channelInfoList)}");
             return channelInfoList.Data.First();
         }
 

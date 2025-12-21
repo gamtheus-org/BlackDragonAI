@@ -1,9 +1,7 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using BlackLegionBot.CommandHandling.SpecialsOperatorsHandling;
 using BlackLegionBot.CommandStorage;
 using BlackLegionBot.TwitchApi;
-using TwitchLib.Api.Interfaces;
 using TwitchLib.Client.Events;
 
 namespace BlackLegionBot.CommandHandling

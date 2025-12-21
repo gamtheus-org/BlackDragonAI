@@ -1,8 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using BlackLegionBot.TwitchApi;
-using Newtonsoft.Json;
-using TwitchLib.Api.Interfaces;
 
 namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
 {
