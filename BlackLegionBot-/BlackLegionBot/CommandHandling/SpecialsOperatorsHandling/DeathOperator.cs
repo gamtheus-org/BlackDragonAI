@@ -25,9 +25,8 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
         public async Task<string> InjectOperatorAsync(string message, string username, string originalMessage)
         {
             var channelInfo = await _twitchApiManager.GetChannelInfo();
-            var gameInfo = await _twitchApiManager.GetGameInfo(channelInfo.GameId);
             var deaths = await GetDeaths(channelInfo.GameId);
-            return $"BlackDragon has died {deaths} times in {gameInfo.Name}";
+            return $"BlackDragon has died {deaths} times in {channelInfo.GameName}";
         }
 
         private async Task<int> GetDeaths(string gameId)
