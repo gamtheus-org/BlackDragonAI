@@ -177,7 +177,9 @@ namespace BlackLegionBot
 
         public async Task TimeoutUserInChannelAsync(string username, TimeSpan duration)
         {
-            await Client.TimeoutUserAsync(_userInfo.ChannelName, username, duration);
+            await this.Client.SendMessageAsync(this._userInfo.ChannelName,
+                $"/timeout {username} {duration.TotalSeconds}");
+            // await Client.TimeoutUserAsync(_userInfo.ChannelName, username, duration);
         }
     }
 }
