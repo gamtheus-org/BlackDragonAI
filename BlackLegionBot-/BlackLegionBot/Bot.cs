@@ -57,7 +57,7 @@ namespace BlackLegionBot
 
             _liveStatusManager = new LiveStatusManager(_twitchApi);
             _commercialManager = new CommercialManager(twitchApi, _liveStatusManager);
-            CommandSelector = new CommandSelector(this, _twitchApi, commandRetriever, blbApi, cooldownManager, _commercialManager);
+            CommandSelector = new CommandSelector(this, _twitchApi, commandRetriever, blbApi, cooldownManager, _commercialManager, TimeoutUserInChannelAsync);
 
             // EventHandlers
             Client.OnMessageReceived += async (obj, args) =>

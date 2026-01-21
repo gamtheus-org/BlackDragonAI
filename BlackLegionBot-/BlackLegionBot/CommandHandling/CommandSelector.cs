@@ -31,9 +31,10 @@ namespace BlackLegionBot.CommandHandling
         private readonly CounterCreationCommandHandler _counterCreationCommandHandler;
         private readonly CounterDeletionCommandHandler _counterDeletionCommandHandler;
         private readonly CounterRetrievalCommandHandler _counterRetrievalCommandHandler;
+        private readonly RevolverRouletteHandler _revolverRouletteHandler;
 
         public CommandSelector(Bot bot, TwitchApiManager twitchApi, ICommandRetriever commandRetriever,
-            BlbApiHandler blbApiClient, CooldownManager cooldownManager, CommercialManager commercialManager)
+            BlbApiHandler blbApiClient, CooldownManager cooldownManager, CommercialManager commercialManager, Func<string, TimeSpan, Task> timeoutUserAsync)
         {
             this.Bot = bot;
             this.TwitchApi = twitchApi;
@@ -61,6 +62,7 @@ namespace BlackLegionBot.CommandHandling
             this._counterRetrievalCommandHandler = new CounterRetrievalCommandHandler(blbApiClient, bot);
             this._counterCreationCommandHandler.OnCounterCreated += this._counterRetrievalCommandHandler.AddCounter;
             this._counterDeletionCommandHandler.OnCounterDeleted += this._counterRetrievalCommandHandler.DeleteCounter;
+            _revolverRouletteHandler = new RevolverRouletteHandler(Bot.SendMessageToChannelAsync, timeoutUserAsync);
         }
 
         public async Task HandleCommand(object sender, OnMessageReceivedArgs messageReceivedArgs)
@@ -114,6 +116,7 @@ namespace BlackLegionBot.CommandHandling
                 "!permit" when senderIsModOrHigher => new[] { this._permissionHandler },
                 "!newcounter" when senderIsModOrHigher => new[] { this._counterCreationCommandHandler },
                 "!deletecounter" when senderIsModOrHigher => new[] { this._counterDeletionCommandHandler },
+                    "!rr" => new[] { _revolverRouletteHandler },
                 "!deaths" when senderIsSubOrHigher &&
                                calledCommand.Length != onMessageReceivedArgs.ChatMessage.Message.Length =>
                 new[] { this._deathsCommandHandler },
