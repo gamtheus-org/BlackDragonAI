@@ -87,6 +87,7 @@ namespace BlackLegionBot.CommandHandling
                 Console.WriteLine("Error!");
                 Console.WriteLine($"Error: {e.Message}");
                 await Bot.SendWhisperToChannelAsync($"Message: {e.Message} \nStackTrace: {e.StackTrace}", "gamtheus");
+                throw; // Rethrow. Let Docker just restart the bot
             }
         }
 
