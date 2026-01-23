@@ -31,7 +31,7 @@ namespace BlackLegionBot.CommandHandling
             var originalMessage = chatMessage.Message;
             var indexOfWhiteSpace = originalMessage.IndexOf(' ');
             var lengthOfCommand = indexOfWhiteSpace >= 0 ? indexOfWhiteSpace : originalMessage.Length;
-            return originalMessage.Substring(0, lengthOfCommand);
+            return originalMessage.Substring(0, lengthOfCommand).ToLower();
         }
         
         public static string ExtractRecipient(this ChatMessage chatMessage) =>
