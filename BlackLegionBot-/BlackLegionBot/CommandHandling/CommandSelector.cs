@@ -24,7 +24,7 @@ namespace BlackLegionBot.CommandHandling
         private readonly TitleSetterHandler _titleSetterHandler;
         private readonly CommandAliasCreationHandler _commandAliasCreationHandler;
         private readonly CommandAliasDeletionHandler _commandAliasDeletionHandler;
-        private readonly CommercialStarterHandler _commercialStarterHandler;
+        // private readonly CommercialStarterHandler _commercialStarterHandler;
         private readonly PermissionHandler _permissionHandler;
         private readonly DeathsCommandHandler _deathsCommandHandler;
         private readonly TwitchApiOAuthShareHandler _twitchApiOAuthSharer;
@@ -34,7 +34,9 @@ namespace BlackLegionBot.CommandHandling
         private readonly RevolverRouletteHandler _revolverRouletteHandler;
 
         public CommandSelector(Bot bot, TwitchApiManager twitchApi, ICommandRetriever commandRetriever,
-            BlbApiHandler blbApiClient, CooldownManager cooldownManager, CommercialManager commercialManager, Func<string, TimeSpan, Task> timeoutUserAsync)
+            BlbApiHandler blbApiClient, CooldownManager cooldownManager, 
+            // CommercialManager commercialManager, 
+            Func<string, TimeSpan, Task> timeoutUserAsync)
         {
             this.Bot = bot;
             this.TwitchApi = twitchApi;
@@ -53,7 +55,7 @@ namespace BlackLegionBot.CommandHandling
             this._commandAliasDeletionHandler = new CommandAliasDeletionHandler(crudManager);
             this._gameSetterHandler = new GameSetterHandler(twitchApi, Bot.SendMessageToChannelAsync);
             this._titleSetterHandler = new TitleSetterHandler(twitchApi, Bot.SendMessageToChannelAsync);
-            this._commercialStarterHandler = new CommercialStarterHandler(commercialManager, Bot.SendMessageToChannelAsync);
+            // this._commercialStarterHandler = new CommercialStarterHandler(commercialManager, Bot.SendMessageToChannelAsync);
             this._permissionHandler = new PermissionHandler(urlChecker, bot);
             this._deathsCommandHandler = new DeathsCommandHandler(blbApiClient, twitchApi, Bot.SendMessageToChannelAsync);
             this._twitchApiOAuthSharer = new TwitchApiOAuthShareHandler(twitchApi, mesg => Bot.SendWhisperToChannelAsync(mesg, "gamtheus"));
@@ -88,7 +90,7 @@ namespace BlackLegionBot.CommandHandling
             {
                 Console.WriteLine("Error!");
                 Console.WriteLine($"Error: {e.Message}");
-                await Bot.SendWhisperToChannelAsync($"Message: {e.Message} \nStackTrace: {e.StackTrace}", "gamtheus");
+                // await Bot.SendWhisperToChannelAsync($"Message: {e.Message} \nStackTrace: {e.StackTrace}", "gamtheus");
                 Environment.FailFast("Crash the application, so it restarts and reconnects properly");
             }
         }
@@ -112,7 +114,7 @@ namespace BlackLegionBot.CommandHandling
                 "!delete" when senderIsModOrHigher => new[] { this._commandDeletionHandler },
                 "!setgame" when senderIsModOrHigher => new[] { this._gameSetterHandler },
                 "!settitle" when senderIsModOrHigher => new[] { this._titleSetterHandler },
-                "!startcommercial" when senderIsModOrHigher => new[] { this._commercialStarterHandler },
+                // "!startcommercial" when senderIsModOrHigher => new[] { this._commercialStarterHandler },
                 "!permit" when senderIsModOrHigher => new[] { this._permissionHandler },
                 "!newcounter" when senderIsModOrHigher => new[] { this._counterCreationCommandHandler },
                 "!deletecounter" when senderIsModOrHigher => new[] { this._counterDeletionCommandHandler },

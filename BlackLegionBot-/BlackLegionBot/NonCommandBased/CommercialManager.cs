@@ -34,6 +34,7 @@ namespace BlackLegionBot.NonCommandBased
                 catch (ApiException)
                 {
                     Console.WriteLine("Something went wrong with starting the commercial");
+                    
                 }
             }
         }
