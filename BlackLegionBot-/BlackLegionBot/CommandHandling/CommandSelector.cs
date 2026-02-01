@@ -99,7 +99,7 @@ namespace BlackLegionBot.CommandHandling
         {
             var senderIsAdmin = onMessageReceivedArgs.ChatMessage.IsAdmin();
             var senderIsModOrHigher = EPermission.MODS.HasEqualOrHigherPermission(onMessageReceivedArgs.ChatMessage.GetPermissionOfSender());
-            var senderIsSubOrHigher = EPermission.SUBS.HasEqualOrHigherPermission(onMessageReceivedArgs.ChatMessage.GetPermissionOfSender());
+            // var senderIsSubOrHigher = EPermission.SUBS.HasEqualOrHigherPermission(onMessageReceivedArgs.ChatMessage.GetPermissionOfSender());
             var calledCommand = onMessageReceivedArgs.ChatMessage.GetCalledCommand();
             return calledCommand switch
             {
@@ -119,8 +119,7 @@ namespace BlackLegionBot.CommandHandling
                 "!newcounter" when senderIsModOrHigher => new[] { this._counterCreationCommandHandler },
                 "!deletecounter" when senderIsModOrHigher => new[] { this._counterDeletionCommandHandler },
                     "!rr" => new[] { _revolverRouletteHandler },
-                "!deaths" when senderIsSubOrHigher &&
-                               calledCommand.Length != onMessageReceivedArgs.ChatMessage.Message.Length =>
+                "!deaths" when calledCommand.Length != onMessageReceivedArgs.ChatMessage.Message.Length =>
                 new[] { this._deathsCommandHandler },
                 _ => new[] { (ICommandHandler)GenericCommandHandler, this._counterRetrievalCommandHandler }
             };
