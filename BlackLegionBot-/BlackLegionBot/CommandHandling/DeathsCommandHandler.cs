@@ -17,6 +17,7 @@ namespace BlackLegionBot.CommandHandling
         private readonly TwitchApiManager _twitchApiManager;
         private readonly Func<string, Task> _sendMessageAsync;
         private readonly Regex _numericRegex;
+        private readonly Regex _deathAdditionRegex = new Regex("!deaths \\+([1-9][0-9]*){0,1}[ ]*");
 
         public DeathsCommandHandler(BlbApiHandler blbApiHandler, TwitchApiManager twitchApiManager, Func<string, Task> sendMessageAsync)
         {
@@ -31,16 +32,20 @@ namespace BlackLegionBot.CommandHandling
             var message = messageReceivedArgs.ChatMessage.Message;
             var channelInfo = await _twitchApiManager.GetChannelInfo();
             BlbCounter blbCounter;
-            if (message.Contains("+"))
+            if (_deathAdditionRegex.IsMatch(message))
             {
-                try
+                if (TryExtractNumber(message[message.IndexOf('+')..], out var number))
+                {
+                    var currentDeaths = await GetDeaths(channelInfo.GameId);
+                    blbCounter = await _blbApiHandler.UpdateDeathCount(new BlbCounter()
+                    {
+                        Deaths = currentDeaths + number,
+                        GameId = channelInfo.GameId
+                    }, channelInfo.GameId);
+                }
+                else
                 {
                     blbCounter = await _blbApiHandler.IncrementDeathCount(channelInfo.GameId);
-                }
-                catch (ApiException)
-                {
-                    await SendInvalidDeathCountErrorAsync(messageReceivedArgs);
-                    return;
                 }
             }
             else if (message.Contains("-"))
@@ -92,6 +97,12 @@ namespace BlackLegionBot.CommandHandling
         private async Task SendInvalidDeathCountErrorAsync(OnMessageReceivedArgs messageReceivedArgs)
         {
             await _sendMessageAsync($"{messageReceivedArgs.ChatMessage.Username}, the number of deaths cannot be less than 0");
+        }
+
+        private async Task<int> GetDeaths(string gameId)
+        {
+            var deathCount = await _blbApiHandler.GetDeathCount(gameId);
+            return deathCount?.Deaths ?? 0;
         }
     }
 }
