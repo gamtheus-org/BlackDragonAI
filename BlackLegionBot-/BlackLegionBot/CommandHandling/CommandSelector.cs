@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BlackLegionBot.Helpers;
 using TwitchLib.Client.Events;
 
 namespace BlackLegionBot.CommandHandling
@@ -32,17 +33,19 @@ namespace BlackLegionBot.CommandHandling
         private readonly CounterDeletionCommandHandler _counterDeletionCommandHandler;
         private readonly CounterRetrievalCommandHandler _counterRetrievalCommandHandler;
         private readonly RevolverRouletteHandler _revolverRouletteHandler;
+        private readonly SpamChecker _spamChecker;
 
         public CommandSelector(Bot bot, TwitchApiManager twitchApi, ICommandRetriever commandRetriever,
             BlbApiHandler blbApiClient, CooldownManager cooldownManager, 
-            // CommercialManager commercialManager, 
-            Func<string, TimeSpan, Task> timeoutUserAsync)
+            // CommercialManager commercialManager,
+                Func<string, TimeSpan, Task> timeoutUserAsync)
         {
             this.Bot = bot;
             this.TwitchApi = twitchApi;
             var urlChecker = new UrlChecker(bot);
             var capsChecker = new CapsChecker(bot);
-            _messageValidators = new IMessageValidator[] { urlChecker, capsChecker };
+            _spamChecker = new SpamChecker(Bot.SendMessageToChannelAsync);
+            _messageValidators = [urlChecker, capsChecker, _spamChecker];
 
             this.GenericCommandHandler = new GenericCommandHandler(commandRetriever, Bot, TwitchApi, cooldownManager, blbApiClient);
             this._authCommandHandler = new AuthCommandHandler(twitchApi);
