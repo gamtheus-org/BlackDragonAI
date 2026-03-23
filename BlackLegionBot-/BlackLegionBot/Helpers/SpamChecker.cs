@@ -33,7 +33,7 @@ public class SpamChecker : IMessageValidator
 
     public async Task HandleValidationErrorAsync(ChatMessage chatMessage)
     {
-        Console.WriteLine("Banning user for sending a message with a banned term: " + chatMessage.Message);
+        Console.WriteLine($"Banning user ({chatMessage.UserId}) for sending a message with a banned term");
         var banInfo = new BanUserInput()
         {
             UserId = chatMessage.UserId,

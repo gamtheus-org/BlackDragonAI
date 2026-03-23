@@ -13,5 +13,6 @@ public record BanUserInput
 
 public record BanUserInputWrapper
 {
+    [JsonPropertyName("data")]
     public BanUserInput Data { get; init; }
 }
