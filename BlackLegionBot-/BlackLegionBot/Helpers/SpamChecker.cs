@@ -19,12 +19,17 @@ public class SpamChecker : IMessageValidator
 
     public bool Validate(ChatMessage chatMessage)
     {
-        var messageContainsBannedTerm = BannedTerms.Any(chatMessage.Message.Contains);
+        var messageContainsBannedTerm = BannedTerms.Any(bannedTerm => chatMessage.Message.Contains(bannedTerm, StringComparison.InvariantCultureIgnoreCase));
+        if (messageContainsBannedTerm)
+        {
+            Console.WriteLine("Message contains a banned term");
+        }
         return !messageContainsBannedTerm;
     }
 
     public async Task HandleValidationErrorAsync(ChatMessage chatMessage)
     {
+        Console.WriteLine("Banning user for sending a message with a banned term: " + chatMessage.Message);
         await _sendMessageToChannelAsync($"/ban {chatMessage.Username}");
     }
 }

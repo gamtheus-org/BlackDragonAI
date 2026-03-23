@@ -33,7 +33,6 @@ namespace BlackLegionBot.CommandHandling
         private readonly CounterDeletionCommandHandler _counterDeletionCommandHandler;
         private readonly CounterRetrievalCommandHandler _counterRetrievalCommandHandler;
         private readonly RevolverRouletteHandler _revolverRouletteHandler;
-        private readonly SpamChecker _spamChecker;
 
         public CommandSelector(Bot bot, TwitchApiManager twitchApi, ICommandRetriever commandRetriever,
             BlbApiHandler blbApiClient, CooldownManager cooldownManager, 
@@ -44,8 +43,8 @@ namespace BlackLegionBot.CommandHandling
             this.TwitchApi = twitchApi;
             var urlChecker = new UrlChecker(bot);
             var capsChecker = new CapsChecker(bot);
-            _spamChecker = new SpamChecker(Bot.SendMessageToChannelAsync);
-            _messageValidators = [urlChecker, capsChecker, _spamChecker];
+            var spamChecker = new SpamChecker(Bot.SendMessageToChannelAsync);
+            _messageValidators = [urlChecker, capsChecker, spamChecker];
 
             this.GenericCommandHandler = new GenericCommandHandler(commandRetriever, Bot, TwitchApi, cooldownManager, blbApiClient);
             this._authCommandHandler = new AuthCommandHandler(twitchApi);
