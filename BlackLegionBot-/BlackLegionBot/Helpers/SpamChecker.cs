@@ -8,7 +8,7 @@ namespace BlackLegionBot.Helpers;
 
 public class SpamChecker : IMessageValidator
 {
-    private static readonly string[] BannedTerms = ["streamboo .com", "streamboo .live"];
+    private static readonly string[] BannedTerms = ["streamboo"];
 
     private readonly Func<string, Task> _sendMessageToChannelAsync;
 
@@ -19,6 +19,7 @@ public class SpamChecker : IMessageValidator
 
     public bool Validate(ChatMessage chatMessage)
     {
+        Console.WriteLine("Checking message for banned term");
         var messageContainsBannedTerm = BannedTerms.Any(bannedTerm => chatMessage.Message.Contains(bannedTerm, StringComparison.InvariantCultureIgnoreCase));
         if (messageContainsBannedTerm)
         {
