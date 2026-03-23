@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using BlackLegionBot.CommandHandling;
 using BlackLegionBot.NonCommandBased;
 using BlackLegionBot.TwitchApi.Models;
+using Refit;
 
 namespace BlackLegionBot.TwitchApi
 {
@@ -96,9 +96,15 @@ namespace BlackLegionBot.TwitchApi
                         Data = banUserInput
                     });
             }
+            catch (ApiException apiException)
+            {
+                Console.Error.WriteLine($"BanUser API call failed. Status: {(int)apiException.StatusCode} ({apiException.StatusCode})");
+                Console.Error.WriteLine($"BanUser API URI: {apiException.Uri}");
+                Console.Error.WriteLine($"BanUser API response body: {apiException.Content ?? "<empty>"}");
+            }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.Error.WriteLine(e.Message);
             }
         }
             
