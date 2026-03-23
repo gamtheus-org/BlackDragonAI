@@ -2,19 +2,22 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using BlackLegionBot.NonCommandBased;
+using BlackLegionBot.TwitchApi;
+using BlackLegionBot.TwitchApi.Models;
 using TwitchLib.Client.Models;
 
 namespace BlackLegionBot.Helpers;
 
 public class SpamChecker : IMessageValidator
 {
+    private const string BanReason = "banned for spam";
     private static readonly string[] BannedTerms = ["streamboo"];
 
-    private readonly Func<string, Task> _sendMessageToChannelAsync;
+    private readonly TwitchApiManager _twitchApiManager;
 
-    public SpamChecker(Func<string, Task> sendMessageToChannelAsync)
+    public SpamChecker(TwitchApiManager twitchApiManager)
     {
-        _sendMessageToChannelAsync = sendMessageToChannelAsync;
+        _twitchApiManager = twitchApiManager;
     }
 
     public bool Validate(ChatMessage chatMessage)
@@ -31,6 +34,11 @@ public class SpamChecker : IMessageValidator
     public async Task HandleValidationErrorAsync(ChatMessage chatMessage)
     {
         Console.WriteLine("Banning user for sending a message with a banned term: " + chatMessage.Message);
-        await _sendMessageToChannelAsync($"/ban {chatMessage.Username}");
+        var banInfo = new BanUserInput()
+        {
+            UserId = chatMessage.UserId,
+            Reason = BanReason
+        };
+        await _twitchApiManager.BanUserAsync(banInfo);
     }
 }

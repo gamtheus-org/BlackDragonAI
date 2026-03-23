@@ -43,7 +43,7 @@ namespace BlackLegionBot.CommandHandling
             this.TwitchApi = twitchApi;
             var urlChecker = new UrlChecker(bot);
             var capsChecker = new CapsChecker(bot);
-            var spamChecker = new SpamChecker(Bot.SendMessageToChannelAsync);
+            var spamChecker = new SpamChecker(twitchApi);
             _messageValidators = [urlChecker, capsChecker, spamChecker];
 
             this.GenericCommandHandler = new GenericCommandHandler(commandRetriever, Bot, TwitchApi, cooldownManager, blbApiClient);
@@ -71,7 +71,8 @@ namespace BlackLegionBot.CommandHandling
 
         public async Task HandleCommand(object sender, OnMessageReceivedArgs messageReceivedArgs)
         {
-            if (!EPermission.MODS.HasEqualOrHigherPermission(messageReceivedArgs.ChatMessage.GetPermissionOfSender()))
+            var senderPermissions = messageReceivedArgs.ChatMessage.GetPermissionOfSender();
+            if (!EPermission.MODS.HasEqualOrHigherPermission(senderPermissions))
             {
                 var failedValidator = this._messageValidators.FirstOrDefault(mv => !mv.Validate(messageReceivedArgs.ChatMessage));
                 if (failedValidator != null)

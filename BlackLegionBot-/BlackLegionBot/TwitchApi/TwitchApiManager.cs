@@ -11,6 +11,8 @@ namespace BlackLegionBot.TwitchApi
 {
     public class TwitchApiManager
     {
+        private const string BotId = "216767082";
+
         public readonly TwitchAuthManager AuthManager;
         private readonly ITwitchApiManager _apiClient;
         private readonly UserInfo _userInfo;
@@ -81,6 +83,13 @@ namespace BlackLegionBot.TwitchApi
         public async Task<bool> IsLive() =>
             (await this._apiClient.GetStreamData(this.AuthManager.GetAccessToken(), this._userInfo.ClientId,
                 this._userInfo.UserId)).Data.Any();
+
+        public async Task BanUserAsync(BanUserInput banUserInput) =>
+            await this._apiClient.BanUser(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId, moderator_id: BotId,
+                new BanUserInputWrapper()
+                {
+                    Data = banUserInput
+                });
 
         public string GetAccessToken() => this.AuthManager.GetAccessToken();
     }

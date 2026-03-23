@@ -44,5 +44,8 @@ namespace BlackLegionBot.TwitchApi
 
         [Post("/helix/channels/commercial")]
         Task<CommercialStartOutput> StartCommercial([Header("Authorization")] string authHeader, [Header("client-id")] string clientId, [Body] CommercialStartInput commercialDetails);
+
+        [Post("/helix/moderation/bans")]
+        Task BanUser([Header("Authorization")] string authHeader, [Header("client-id")] string clientId, [Query] string broadcaster_id, [Query] string moderator_id, [Body] BanUserInputWrapper banDetails);
     }
 }
