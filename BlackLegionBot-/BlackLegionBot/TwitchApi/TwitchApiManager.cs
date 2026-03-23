@@ -12,7 +12,7 @@ namespace BlackLegionBot.TwitchApi
 {
     public class TwitchApiManager
     {
-        private const string BotId = "216767082";
+        private const string BotId = "89060204";
 
         public readonly TwitchAuthManager AuthManager;
         private readonly ITwitchApiManager _apiClient;
