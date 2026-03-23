@@ -71,7 +71,7 @@ namespace BlackLegionBot.TwitchApi
         }
 
         public async Task UpdateChannelInfo(ChannelInfo channelInfo) =>
-            await this._apiClient.UpdateChannelInfo(this.AuthManager.GetAccessToken(), this._userInfo.UserId, this._userInfo.UserId, channelInfo);
+            await this._apiClient.UpdateChannelInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId, channelInfo);
 
         public async Task<CommercialStartOutput> StartCommercial(ECommercialLength length) =>
             await this._apiClient.StartCommercial(this.AuthManager.GetAccessToken(), this._userInfo.ClientId,
@@ -90,7 +90,7 @@ namespace BlackLegionBot.TwitchApi
             try
             {
                 await this._apiClient.BanUser(this.AuthManager.GetAccessToken(), this._userInfo.ClientId,
-                    this._userInfo.UserId, moderator_id: _userInfo.ClientId,
+                    this._userInfo.UserId, moderator_id: _userInfo.UserId,
                     new BanUserInputWrapper()
                     {
                         Data = banUserInput
