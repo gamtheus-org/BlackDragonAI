@@ -90,7 +90,7 @@ namespace BlackLegionBot.TwitchApi
             try
             {
                 await this._apiClient.BanUser(this.AuthManager.GetAccessToken(), this._userInfo.ClientId,
-                    this._userInfo.UserId, moderator_id: BotId,
+                    this._userInfo.UserId, moderator_id: _userInfo.ClientId,
                     new BanUserInputWrapper()
                     {
                         Data = banUserInput
