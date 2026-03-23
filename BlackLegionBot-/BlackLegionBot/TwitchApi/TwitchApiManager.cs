@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using BlackLegionBot.CommandHandling;
@@ -84,12 +85,23 @@ namespace BlackLegionBot.TwitchApi
             (await this._apiClient.GetStreamData(this.AuthManager.GetAccessToken(), this._userInfo.ClientId,
                 this._userInfo.UserId)).Data.Any();
 
-        public async Task BanUserAsync(BanUserInput banUserInput) =>
-            await this._apiClient.BanUser(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId, moderator_id: BotId,
-                new BanUserInputWrapper()
-                {
-                    Data = banUserInput
-                });
+        public async Task BanUserAsync(BanUserInput banUserInput)
+        {
+            try
+            {
+                await this._apiClient.BanUser(this.AuthManager.GetAccessToken(), this._userInfo.ClientId,
+                    this._userInfo.UserId, moderator_id: BotId,
+                    new BanUserInputWrapper()
+                    {
+                        Data = banUserInput
+                    });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+            
 
         public string GetAccessToken() => this.AuthManager.GetAccessToken();
     }
