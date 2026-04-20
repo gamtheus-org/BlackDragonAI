@@ -3,6 +3,7 @@ using BlackLegionBot.NonCommandBased;
 using BlackLegionBot.TwitchApi;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using BlackLegionBot.Helpers;
@@ -133,7 +134,9 @@ namespace BlackLegionBot.CommandHandling
     {
         public Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
-            throw new Exception("Bot deed krak");
+            Console.WriteLine("Killing the process to trigger a restart of the bot...");
+            Environment.FailFast("Crash the application, so it restarts and reconnects properly");
+            return Task.CompletedTask;
         }
     }
 }
