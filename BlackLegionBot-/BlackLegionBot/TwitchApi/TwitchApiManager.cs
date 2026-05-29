@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using BlackLegionBot.CommandHandling;
 using BlackLegionBot.NonCommandBased;
@@ -12,6 +12,8 @@ namespace BlackLegionBot.TwitchApi
 {
     public class TwitchApiManager
     {
+        private const string BotId = "89060204";
+
         public readonly TwitchAuthManager AuthManager;
         private readonly ITwitchApiManager _apiClient;
         private readonly UserInfo _userInfo;
@@ -52,16 +54,21 @@ namespace BlackLegionBot.TwitchApi
             (await this._apiClient.GetGameInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, id, name)).Data.FirstOrDefault();
 
         public async Task<int> GetFollowCount() =>
-            (await this._apiClient.GetFollowerInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId, null, null, 1)).Total;
+            (await this._apiClient.GetFollowerInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId, null, 1)).Total;
 
         public async Task<FollowerInfo> GetFollowerInfo(string userIdToRetrieve) =>
-            (await this._apiClient.GetFollowerInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId, userIdToRetrieve, null, 1)).Data.First();
+            (await this._apiClient.GetFollowerInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId, userIdToRetrieve, 1)).Data.First();
 
         public async Task<UserDetails> GetUserDetails(string name) =>
             (await this._apiClient.GetUserDetails(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, null, name)).Data.FirstOrDefault();
 
-        public async Task<ChannelInfo> GetChannelInfo() =>
-            (await this._apiClient.GetChannelInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId)).Data.First();
+        public async Task<ChannelInfo> GetChannelInfo()
+        {
+            var channelInfoList = await this._apiClient.GetChannelInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId,
+                this._userInfo.UserId);
+            Console.WriteLine($"Channel info result: {JsonSerializer.Serialize(channelInfoList)}");
+            return channelInfoList.Data.First();
+        }
 
         public async Task UpdateChannelInfo(ChannelInfo channelInfo) =>
             await this._apiClient.UpdateChannelInfo(this.AuthManager.GetAccessToken(), this._userInfo.ClientId, this._userInfo.UserId, channelInfo);
@@ -77,6 +84,30 @@ namespace BlackLegionBot.TwitchApi
         public async Task<bool> IsLive() =>
             (await this._apiClient.GetStreamData(this.AuthManager.GetAccessToken(), this._userInfo.ClientId,
                 this._userInfo.UserId)).Data.Any();
+
+        public async Task BanUserAsync(BanUserInput banUserInput)
+        {
+            try
+            {
+                await this._apiClient.BanUser(this.AuthManager.GetAccessToken(), this._userInfo.ClientId,
+                    this._userInfo.UserId, moderator_id: _userInfo.UserId,
+                    new BanUserInputWrapper()
+                    {
+                        Data = banUserInput
+                    });
+            }
+            catch (ApiException apiException)
+            {
+                Console.Error.WriteLine($"BanUser API call failed. Status: {(int)apiException.StatusCode} ({apiException.StatusCode})");
+                Console.Error.WriteLine($"BanUser API URI: {apiException.Uri}");
+                Console.Error.WriteLine($"BanUser API response body: {apiException.Content ?? "<empty>"}");
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e.Message);
+            }
+        }
+            
 
         public string GetAccessToken() => this.AuthManager.GetAccessToken();
     }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using TwitchLib.Client.Events;
 
 namespace BlackLegionBot.CommandHandling
@@ -20,7 +21,7 @@ namespace BlackLegionBot.CommandHandling
             this._bot = bot;
         }
 
-        public async void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        public async Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
             if (this._commandCall.Length >= messageReceivedArgs.ChatMessage.Message.Length) return;
             var commandName = messageReceivedArgs.ChatMessage.Message.
@@ -29,7 +30,7 @@ namespace BlackLegionBot.CommandHandling
                 .Replace("!", "");
 
             // Call blbApi
-            var counter = new BLBCounter()
+            var counter = new BlbCounter()
             {
                 Deaths = 0,
                 GameId = commandName,
@@ -37,7 +38,7 @@ namespace BlackLegionBot.CommandHandling
             };
             await this._blbApi.UpdateDeathCount(counter, commandName);
             this.OnCounterCreated?.Invoke(commandName);
-            this._bot.SendMessageToChannel($"De counter {counter.GameId} is aangemaakt!");
+            this._bot.SendMessageToChannelAsync($"De counter {counter.GameId} is aangemaakt!");
         }
     }
 
@@ -54,7 +55,7 @@ namespace BlackLegionBot.CommandHandling
             this._bot = bot;
         }
 
-        public async void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        public async Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
             if (this._commandCall.Length >= messageReceivedArgs.ChatMessage.Message.Length) return;
             var commandName = messageReceivedArgs.ChatMessage.Message.
@@ -65,7 +66,7 @@ namespace BlackLegionBot.CommandHandling
             // Call blbApi
             await this._blbApi.DeleteCounter(commandName);
             this.OnCounterDeleted?.Invoke(commandName);
-            this._bot.SendMessageToChannel($"De counter {commandName} is verwijderd");
+            this._bot.SendMessageToChannelAsync($"De counter {commandName} is verwijderd");
         }
     }
 
@@ -102,7 +103,7 @@ namespace BlackLegionBot.CommandHandling
             this._counters.Remove(counterName);
         }
 
-        public async void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        public async Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
             var message = messageReceivedArgs.ChatMessage.Message;
             if (!message.Contains("!"))
@@ -132,7 +133,7 @@ namespace BlackLegionBot.CommandHandling
                 {
                     // Set to specified amount
                     var newAmount = int.Parse(amountMatch.Value.TrimStart());
-                    await this._blbApi.UpdateDeathCount(new BLBCounter()
+                    await this._blbApi.UpdateDeathCount(new BlbCounter()
                     {
                         Deaths = newAmount,
                         GameId = counterName,
@@ -148,7 +149,7 @@ namespace BlackLegionBot.CommandHandling
                 }
             }
 
-            this._bot.SendMessageToChannel($"De {counterName} teller staat op {count}!");
+            this._bot.SendMessageToChannelAsync($"De {counterName} teller staat op {count}!");
         }
     }
 }

@@ -15,32 +15,37 @@ namespace BlackLegionBot.CommandHandling
     {
         private readonly BlbApiHandler _blbApiHandler;
         private readonly TwitchApiManager _twitchApiManager;
-        private readonly Action<string> _sendMessage;
+        private readonly Func<string, Task> _sendMessageAsync;
         private readonly Regex _numericRegex;
+        private readonly Regex _deathAdditionRegex = new Regex("!deaths \\+([1-9][0-9]*){0,1}[ ]*");
 
-        public DeathsCommandHandler(BlbApiHandler blbApiHandler, TwitchApiManager twitchApiManager, Action<string> sendMessage)
+        public DeathsCommandHandler(BlbApiHandler blbApiHandler, TwitchApiManager twitchApiManager, Func<string, Task> sendMessageAsync)
         {
             _blbApiHandler = blbApiHandler;
             _twitchApiManager = twitchApiManager;
-            _sendMessage = sendMessage;
+            _sendMessageAsync = sendMessageAsync;
             _numericRegex = new Regex("[0-9]+");
         }
 
-        public async void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        public async Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
             var message = messageReceivedArgs.ChatMessage.Message;
             var channelInfo = await _twitchApiManager.GetChannelInfo();
-            BLBCounter blbCounter;
-            if (message.Contains("+"))
+            BlbCounter blbCounter;
+            if (_deathAdditionRegex.IsMatch(message))
             {
-                try
+                if (TryExtractNumber(message[message.IndexOf('+')..], out var number))
+                {
+                    var currentDeaths = await GetDeaths(channelInfo.GameId);
+                    blbCounter = await _blbApiHandler.UpdateDeathCount(new BlbCounter()
+                    {
+                        Deaths = currentDeaths + number,
+                        GameId = channelInfo.GameId
+                    }, channelInfo.GameId);
+                }
+                else
                 {
                     blbCounter = await _blbApiHandler.IncrementDeathCount(channelInfo.GameId);
-                }
-                catch (ApiException)
-                {
-                    SendInvalidDeathCountError(messageReceivedArgs);
-                    return;
                 }
             }
             else if (message.Contains("-"))
@@ -51,7 +56,7 @@ namespace BlackLegionBot.CommandHandling
                 }
                 catch (ApiException)
                 {
-                    SendInvalidDeathCountError(messageReceivedArgs);
+                    await SendInvalidDeathCountErrorAsync(messageReceivedArgs);
                     return;
                 }
             }
@@ -62,10 +67,10 @@ namespace BlackLegionBot.CommandHandling
 
                 if (number < 0)
                 {
-                    SendInvalidDeathCountError(messageReceivedArgs);
+                    await SendInvalidDeathCountErrorAsync(messageReceivedArgs);
                     return;
                 }
-                blbCounter = await _blbApiHandler.UpdateDeathCount(new BLBCounter()
+                blbCounter = await _blbApiHandler.UpdateDeathCount(new BlbCounter()
                 {
                     Deaths = number,
                     GameId = channelInfo.GameId
@@ -73,7 +78,7 @@ namespace BlackLegionBot.CommandHandling
             }
 
             var gameInfo = await _twitchApiManager.GetGameInfo(channelInfo.GameId);
-            _sendMessage($"BlackDragon is {blbCounter.Deaths} keer dood gegaan in {gameInfo.Name}");
+            await _sendMessageAsync($"BlackDragon has died {blbCounter.Deaths} times in {gameInfo.Name}");
         }
 
         private bool TryExtractNumber(string message, out int number)
@@ -89,7 +94,15 @@ namespace BlackLegionBot.CommandHandling
             return true;
         }
 
-        private void SendInvalidDeathCountError(OnMessageReceivedArgs messageReceivedArgs) => 
-            _sendMessage($"{messageReceivedArgs.ChatMessage.Username}, het aantal deaths mag niet onder 0 zijn");
+        private async Task SendInvalidDeathCountErrorAsync(OnMessageReceivedArgs messageReceivedArgs)
+        {
+            await _sendMessageAsync($"{messageReceivedArgs.ChatMessage.Username}, the number of deaths cannot be less than 0");
+        }
+
+        private async Task<int> GetDeaths(string gameId)
+        {
+            var deathCount = await _blbApiHandler.GetDeathCount(gameId);
+            return deathCount?.Deaths ?? 0;
+        }
     }
 }

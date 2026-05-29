@@ -4,7 +4,6 @@ namespace BlackLegionBot.CommandStorage
 {
     public class CommandDetails
     {
-        // TODO: Fix property names (Name for sure)
         public string _id { get; set; }
         public int Timer { get; set; } = 60;
         public EPermission Permission { get; set; } = EPermission.EVERYONE;

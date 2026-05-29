@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using TwitchLib.Client.Models;
 
 namespace BlackLegionBot.NonCommandBased
@@ -9,6 +10,6 @@ namespace BlackLegionBot.NonCommandBased
     {
         bool Validate(ChatMessage chatMessage);
 
-        void HandleValidationError(ChatMessage chatMessage);
+        Task HandleValidationErrorAsync(ChatMessage chatMessage);
     }
 }

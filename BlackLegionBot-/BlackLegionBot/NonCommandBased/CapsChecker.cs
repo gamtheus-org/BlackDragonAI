@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using BlackLegionBot.Helpers;
 using TwitchLib.Client.Models;
 
 namespace BlackLegionBot.NonCommandBased
@@ -34,9 +36,9 @@ namespace BlackLegionBot.NonCommandBased
         }
 
         public bool Validate(ChatMessage chatMessage) => !UsesTooManyCaps(chatMessage.Message);
-        public void HandleValidationError(ChatMessage chatMessage)
+        public async Task HandleValidationErrorAsync(ChatMessage chatMessage)
         {
-            this._bot.TimeoutUser(chatMessage.Username, 1, "Onnodig gebruik van caps is niet toegestaan");
+            await _bot.TimeoutUserInChannelAsync(chatMessage.Username, new TimeSpan(0, 0, 0, seconds: 1));
         }
     }
 }

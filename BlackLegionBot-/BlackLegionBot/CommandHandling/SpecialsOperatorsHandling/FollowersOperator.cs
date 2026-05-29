@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using BlackLegionBot.TwitchApi;
-using TwitchLib.Api.Interfaces;
 
 namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
 {

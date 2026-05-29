@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using BlackLegionBot.NonCommandBased;
 using Refit;
 using TwitchLib.Client.Events;
@@ -12,15 +13,15 @@ namespace BlackLegionBot.CommandHandling
     public class CommercialStarterHandler : ICommandHandler
     {
         private readonly CommercialManager _commercialManager;
-        private readonly Action<string> _sendMessageToChannel;
+        private readonly Func<string, Task> _sendMessageToChannelAsync;
 
-        public CommercialStarterHandler(CommercialManager commercialManager, Action<string> sendMessageToChannel)
+        public CommercialStarterHandler(CommercialManager commercialManager, Func<string, Task> sendMessageToChannelAsync)
         {
             this._commercialManager = commercialManager;
-            this._sendMessageToChannel = sendMessageToChannel;
+            this._sendMessageToChannelAsync = sendMessageToChannelAsync;
         }
 
-        public async void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        public async Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
             var lengthString = new Regex("[0-9]+").Matches(messageReceivedArgs.ChatMessage.Message).FirstOrDefault()?.Value;
             ECommercialLength length = ECommercialLength.L30;
@@ -34,7 +35,7 @@ namespace BlackLegionBot.CommandHandling
                 }
                 catch (InvalidCastException)
                 {
-                    _sendMessageToChannel("Invalide length. De lengte van een advertentie kan zijn: 30, 60, 90, 120, 150 en 180");
+                    await _sendMessageToChannelAsync("Invalid length. The length of an advertisement can only be: 30, 60, 90, 120, 150 or 180");
                     return;
                 }
             }
@@ -42,11 +43,11 @@ namespace BlackLegionBot.CommandHandling
             try
             {
                 await this._commercialManager.StartCommercial(length);
-                _sendMessageToChannel($"Een advertentie van {length.ToString().Substring(1)} seconden is gestart");
+                await _sendMessageToChannelAsync($"An ad of {length.ToString().Substring(1)} seconds has been started");
             }
             catch(ApiException)
             {
-                _sendMessageToChannel("Er is iets mis gegaan met het starten van de advertentie. Waarschijnlijk is de stream momenteel niet live.");
+                await _sendMessageToChannelAsync("Something went wrong with trying to start the advertisement. The most likely cause is the stream bot being live.");
             }
         }
     }

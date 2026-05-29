@@ -1,7 +1,7 @@
 ﻿using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using BlackLegionBot.CommandStorage;
-using Newtonsoft.Json;
 
 namespace BlackLegionBot.Credentials
 {
@@ -9,18 +9,18 @@ namespace BlackLegionBot.Credentials
     {
         private const string AppsettingsFileLocation = "../appsettings.json";
         
-        public BLBAPIConfig Blbapi { get; set; }
+        public BlbApiConfig BlbApi { get; set; }
 
         public static async Task<Appsettings> GetAppsettings()
         {
             using var sr = new StreamReader(AppsettingsFileLocation);
-            return JsonConvert.DeserializeObject<Appsettings>(await sr.ReadToEndAsync());
+            return JsonSerializer.Deserialize<Appsettings>(await sr.ReadToEndAsync());
         }
 
         public async Task WriteAppsettings()
         {
             await using var sw = new StreamWriter(AppsettingsFileLocation);
-            await sw.WriteAsync(JsonConvert.SerializeObject(this));
+            await sw.WriteAsync(JsonSerializer.Serialize(this));
         }
     }
 }

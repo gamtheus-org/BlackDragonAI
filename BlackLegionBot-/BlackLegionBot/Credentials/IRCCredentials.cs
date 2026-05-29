@@ -2,14 +2,14 @@
 
 namespace BlackLegionBot.Credentials
 {
-    public class IRCCredentials
+    public class IrcCredentials
     {
-        public IRCCredentials()
+        public IrcCredentials()
         {
 
         }
 
-        public IRCCredentials(IConfiguration configSection)
+        public IrcCredentials(IConfiguration configSection)
         {
             Username = configSection.GetValue<string>("Username");
             AccessToken = configSection.GetValue<string>("AccessToken");
@@ -19,4 +19,5 @@ namespace BlackLegionBot.Credentials
     
         public string AccessToken { get; set; }
     }
+
 }

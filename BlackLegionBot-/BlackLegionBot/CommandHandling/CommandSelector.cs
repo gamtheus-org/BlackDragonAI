@@ -3,7 +3,10 @@ using BlackLegionBot.NonCommandBased;
 using BlackLegionBot.TwitchApi;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
+using BlackLegionBot.Helpers;
 using TwitchLib.Client.Events;
 
 namespace BlackLegionBot.CommandHandling
@@ -23,53 +26,59 @@ namespace BlackLegionBot.CommandHandling
         private readonly TitleSetterHandler _titleSetterHandler;
         private readonly CommandAliasCreationHandler _commandAliasCreationHandler;
         private readonly CommandAliasDeletionHandler _commandAliasDeletionHandler;
-        private readonly CommercialStarterHandler _commercialStarterHandler;
+        // private readonly CommercialStarterHandler _commercialStarterHandler;
         private readonly PermissionHandler _permissionHandler;
         private readonly DeathsCommandHandler _deathsCommandHandler;
         private readonly TwitchApiOAuthShareHandler _twitchApiOAuthSharer;
         private readonly CounterCreationCommandHandler _counterCreationCommandHandler;
         private readonly CounterDeletionCommandHandler _counterDeletionCommandHandler;
         private readonly CounterRetrievalCommandHandler _counterRetrievalCommandHandler;
+        private readonly RevolverRouletteHandler _revolverRouletteHandler;
 
         public CommandSelector(Bot bot, TwitchApiManager twitchApi, ICommandRetriever commandRetriever,
-            BlbApiHandler blbApiClient, CooldownManager cooldownManager, CommercialManager commercialManager)
+            BlbApiHandler blbApiClient, CooldownManager cooldownManager, 
+            // CommercialManager commercialManager,
+                Func<string, TimeSpan, Task> timeoutUserAsync)
         {
             this.Bot = bot;
             this.TwitchApi = twitchApi;
             var urlChecker = new UrlChecker(bot);
             var capsChecker = new CapsChecker(bot);
-            _messageValidators = new IMessageValidator[] { urlChecker, capsChecker };
+            var spamChecker = new SpamChecker(twitchApi);
+            _messageValidators = [urlChecker, capsChecker, spamChecker];
 
             this.GenericCommandHandler = new GenericCommandHandler(commandRetriever, Bot, TwitchApi, cooldownManager, blbApiClient);
             this._authCommandHandler = new AuthCommandHandler(twitchApi);
-            var crudManager = new CommandCrudManager(blbApiClient, Bot.SendMessageToChannel);
+            var crudManager = new CommandCrudManager(blbApiClient, Bot.SendMessageToChannelAsync);
             crudManager.RefreshOfCommandsRequired += commandRetriever.RetrieveCommands;
             this._commandCreateHandler = new CommandCreateHandler(crudManager);
             this._commandEditHandler = new CommandEditHandler(crudManager);
             this._commandDeletionHandler = new CommandDeletionHandler(crudManager);
             this._commandAliasCreationHandler = new CommandAliasCreationHandler(crudManager);
             this._commandAliasDeletionHandler = new CommandAliasDeletionHandler(crudManager);
-            this._gameSetterHandler = new GameSetterHandler(twitchApi, Bot.SendMessageToChannel);
-            this._titleSetterHandler = new TitleSetterHandler(twitchApi, Bot.SendMessageToChannel);
-            this._commercialStarterHandler = new CommercialStarterHandler(commercialManager, Bot.SendMessageToChannel);
+            this._gameSetterHandler = new GameSetterHandler(twitchApi, Bot.SendMessageToChannelAsync);
+            this._titleSetterHandler = new TitleSetterHandler(twitchApi, Bot.SendMessageToChannelAsync);
+            // this._commercialStarterHandler = new CommercialStarterHandler(commercialManager, Bot.SendMessageToChannelAsync);
             this._permissionHandler = new PermissionHandler(urlChecker, bot);
-            this._deathsCommandHandler = new DeathsCommandHandler(blbApiClient, twitchApi, Bot.SendMessageToChannel);
-            this._twitchApiOAuthSharer = new TwitchApiOAuthShareHandler(twitchApi, mesg => Bot.SendWhisperToChannel(mesg, "gamtheus"));
+            this._deathsCommandHandler = new DeathsCommandHandler(blbApiClient, twitchApi, Bot.SendMessageToChannelAsync);
+            this._twitchApiOAuthSharer = new TwitchApiOAuthShareHandler(twitchApi, mesg => Bot.SendWhisperToChannelAsync(mesg, "gamtheus"));
             this._counterCreationCommandHandler = new CounterCreationCommandHandler(blbApiClient, bot);
             this._counterDeletionCommandHandler = new CounterDeletionCommandHandler(blbApiClient, bot);
             this._counterRetrievalCommandHandler = new CounterRetrievalCommandHandler(blbApiClient, bot);
             this._counterCreationCommandHandler.OnCounterCreated += this._counterRetrievalCommandHandler.AddCounter;
             this._counterDeletionCommandHandler.OnCounterDeleted += this._counterRetrievalCommandHandler.DeleteCounter;
+            _revolverRouletteHandler = new RevolverRouletteHandler(Bot.SendMessageToChannelAsync, timeoutUserAsync);
         }
 
-        public void HandleCommand(object sender, OnMessageReceivedArgs messageReceivedArgs)
+        public async Task HandleCommand(object sender, OnMessageReceivedArgs messageReceivedArgs)
         {
-            if (!EPermission.MODS.HasEqualOrHigherPermission(messageReceivedArgs.ChatMessage.GetPermissionOfSender()))
+            var senderPermissions = messageReceivedArgs.ChatMessage.GetPermissionOfSender();
+            if (!EPermission.MODS.HasEqualOrHigherPermission(senderPermissions))
             {
                 var failedValidator = this._messageValidators.FirstOrDefault(mv => !mv.Validate(messageReceivedArgs.ChatMessage));
                 if (failedValidator != null)
                 {
-                    failedValidator.HandleValidationError(messageReceivedArgs.ChatMessage);
+                    await failedValidator.HandleValidationErrorAsync(messageReceivedArgs.ChatMessage);
                     return;
                 }
             }
@@ -78,14 +87,15 @@ namespace BlackLegionBot.CommandHandling
             {
                 foreach (var commandHandler in GetCommandHandlers(messageReceivedArgs))
                 {
-                    commandHandler.Handle(messageReceivedArgs);
+                    await commandHandler.Handle(messageReceivedArgs);
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine("Error!");
                 Console.WriteLine($"Error: {e.Message}");
-                this.Bot.SendWhisperToChannel($"Message: {e.Message} \nStackTrace: {e.StackTrace}", "gamtheus");
+                // await Bot.SendWhisperToChannelAsync($"Message: {e.Message} \nStackTrace: {e.StackTrace}", "gamtheus");
+                Environment.FailFast("Crash the application, so it restarts and reconnects properly");
             }
         }
 
@@ -93,7 +103,7 @@ namespace BlackLegionBot.CommandHandling
         {
             var senderIsAdmin = onMessageReceivedArgs.ChatMessage.IsAdmin();
             var senderIsModOrHigher = EPermission.MODS.HasEqualOrHigherPermission(onMessageReceivedArgs.ChatMessage.GetPermissionOfSender());
-            var senderIsSubOrHigher = EPermission.SUBS.HasEqualOrHigherPermission(onMessageReceivedArgs.ChatMessage.GetPermissionOfSender());
+            // var senderIsSubOrHigher = EPermission.SUBS.HasEqualOrHigherPermission(onMessageReceivedArgs.ChatMessage.GetPermissionOfSender());
             var calledCommand = onMessageReceivedArgs.ChatMessage.GetCalledCommand();
             return calledCommand switch
             {
@@ -108,12 +118,12 @@ namespace BlackLegionBot.CommandHandling
                 "!delete" when senderIsModOrHigher => new[] { this._commandDeletionHandler },
                 "!setgame" when senderIsModOrHigher => new[] { this._gameSetterHandler },
                 "!settitle" when senderIsModOrHigher => new[] { this._titleSetterHandler },
-                "!startcommercial" when senderIsModOrHigher => new[] { this._commercialStarterHandler },
+                // "!startcommercial" when senderIsModOrHigher => new[] { this._commercialStarterHandler },
                 "!permit" when senderIsModOrHigher => new[] { this._permissionHandler },
                 "!newcounter" when senderIsModOrHigher => new[] { this._counterCreationCommandHandler },
                 "!deletecounter" when senderIsModOrHigher => new[] { this._counterDeletionCommandHandler },
-                "!deaths" when senderIsSubOrHigher &&
-                               calledCommand.Length != onMessageReceivedArgs.ChatMessage.Message.Length =>
+                    "!rr" => new[] { _revolverRouletteHandler },
+                "!deaths" when calledCommand.Length != onMessageReceivedArgs.ChatMessage.Message.Length =>
                 new[] { this._deathsCommandHandler },
                 _ => new[] { (ICommandHandler)GenericCommandHandler, this._counterRetrievalCommandHandler }
             };
@@ -122,9 +132,11 @@ namespace BlackLegionBot.CommandHandling
 
     public class CrashCommandHandler : ICommandHandler
     {
-        public void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        public Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
-            throw new Exception("Bot deed krak");
+            Console.WriteLine("Killing the process to trigger a restart of the bot...");
+            Environment.FailFast("Crash the application, so it restarts and reconnects properly");
+            return Task.CompletedTask;
         }
     }
 }
