@@ -11,7 +11,7 @@ namespace BlackLegionBot.Helpers;
 public class SpamChecker : IMessageValidator
 {
     private const string BanReason = "banned for spam";
-    private static readonly string[] BannedTerms = ["streamboo", "nezhna", "sᴛʀeᴀᴍʙᴏᴏ"];
+    private static readonly string[] BannedTerms = ["streamboo", "nezhna", "sᴛʀeᴀᴍʙᴏᴏ", "sᴛʀeaᴍʙᴏᴏ"];
 
     private readonly TwitchApiManager _twitchApiManager;
 
