@@ -33,7 +33,17 @@ public class SpamChecker : IMessageValidator
 
     public async Task LoadBannedTermsAsync()
     {
-        BannedTerms = new HashSet<string>(await _blbApiHandler.GetBannedTermsAsync());
+        try
+        {
+            BannedTerms = new HashSet<string>(await _blbApiHandler.GetBannedTermsAsync());
+            Console.WriteLine($"Loading new banned terms: {BannedTerms.Count}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error loading banned terms, trying in 5 seconds again: {e.Message}");
+            await Task.Delay(TimeSpan.FromSeconds(5));
+            await LoadBannedTermsAsync();
+        }
     }
 
     public bool Validate(ChatMessage chatMessage)
