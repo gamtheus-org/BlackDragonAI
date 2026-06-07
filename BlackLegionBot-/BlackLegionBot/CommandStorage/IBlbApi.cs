@@ -71,6 +71,16 @@ namespace BlackLegionBot.CommandStorage
 
         [Get("/deaths/exists/{counterName}")]
         Task<Existence> CounterExists([Header("X-Access-Token")] string authToken, string counterName);
+
+        #region BannedTerms
+
+        [Put("/banned-terms")]
+        Task SaveBannedTerms([Header("X-Access-Token")] string authToken, string[] terms);
+
+        [Get("/banned-terms")]
+        Task<string[]> GetBannedTerms([Header("X-Access-Token")] string authToken);
+
+        #endregion
     }
 
     public class AliasInput

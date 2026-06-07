@@ -36,7 +36,7 @@ namespace BlackLegionBot.CommandHandling
         private readonly RevolverRouletteHandler _revolverRouletteHandler;
 
         public CommandSelector(Bot bot, TwitchApiManager twitchApi, ICommandRetriever commandRetriever,
-            BlbApiHandler blbApiClient, CooldownManager cooldownManager, 
+            BlbApiHandler blbApiClient, CooldownManager cooldownManager, WebhookHandler webhookHandler,
             // CommercialManager commercialManager,
                 Func<string, TimeSpan, Task> timeoutUserAsync)
         {
@@ -44,7 +44,7 @@ namespace BlackLegionBot.CommandHandling
             this.TwitchApi = twitchApi;
             var urlChecker = new UrlChecker(bot);
             var capsChecker = new CapsChecker(bot);
-            var spamChecker = new SpamChecker(twitchApi);
+            var spamChecker = new SpamChecker(twitchApi, webhookHandler, blbApiClient);
             _messageValidators = [urlChecker, capsChecker, spamChecker];
 
             this.GenericCommandHandler = new GenericCommandHandler(commandRetriever, Bot, TwitchApi, cooldownManager, blbApiClient);

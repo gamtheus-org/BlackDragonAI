@@ -16,6 +16,7 @@ namespace BlackLegionBot.NonCommandBased
         
         public event Action CommandsChanged;
         public event Action TimedMessagesChanged;
+        public event Action BannedTermsChanged;
 
         public event Action<string> AuthTokenChanged;
 
@@ -28,6 +29,7 @@ namespace BlackLegionBot.NonCommandBased
             _webhooks.Add(("commands", RaiseCommandChangedEvent));
             _webhooks.Add(("timedmessages", RaiseTimedMessagesChangedEvent));
             _webhooks.Add(("reconnect", reconnect));
+            _webhooks.Add(("banned-terms", RaiseBannedTermsChangedEvent));
         }
 
         public async void ListenForWebhooks()
@@ -68,7 +70,8 @@ namespace BlackLegionBot.NonCommandBased
         }
 
         private HttpListener SetListener()
-        {const string WebhookPath = "/bot/webhook/";
+        {
+            const string WebhookPath = "/bot/webhook/";
             var listener = new HttpListener();
             listener.Prefixes.Add($"http://*:80{WebhookPath}");
             listener.Start();
@@ -78,5 +81,6 @@ namespace BlackLegionBot.NonCommandBased
 
         private void RaiseCommandChangedEvent() => CommandsChanged?.Invoke();
         private void RaiseTimedMessagesChangedEvent() => TimedMessagesChanged?.Invoke();
+        private void RaiseBannedTermsChangedEvent() => BannedTermsChanged?.Invoke();
     }
 }

@@ -100,6 +100,16 @@ namespace BlackLegionBot.CommandStorage
 
         public Task<Existence> CounterExists(string counterName) =>
             _blbApi.CounterExists(this._jwt, counterName);
+
+        #region BannedTerms
+
+        public async Task SaveBannedTermsAsync(string[] terms) =>
+            await _blbApi.SaveBannedTerms(this._jwt, terms);
+
+        public async Task<string[]> GetBannedTermsAsync() =>
+            await _blbApi.GetBannedTerms(this._jwt);
+
+        #endregion
     }
 
     public static class BlbApiExtensions
