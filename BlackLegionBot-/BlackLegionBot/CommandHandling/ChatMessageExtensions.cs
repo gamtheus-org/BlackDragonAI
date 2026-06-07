@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using BlackLegionBot.CommandStorage;
+using TwitchLib.Client.Enums;
 using TwitchLib.Client.Models;
 
 namespace BlackLegionBot.CommandHandling
@@ -13,18 +14,24 @@ namespace BlackLegionBot.CommandHandling
             Bot.NamesOfAdmins.Any(name =>
                 name.Equals(chatMessage.Username, StringComparison.InvariantCultureIgnoreCase));
 
-        public static EPermission GetPermissionOfSender(this ChatMessage chatMessage) =>
-            chatMessage.IsAdmin() ? EPermission.ADMIN :
-                chatMessage.IsModerator ? EPermission.MODS :
-                chatMessage.IsSubscriber ? EPermission.SUBS : 
-                EPermission.EVERYONE;
+        public static EPermission GetPermissionOfSender(this ChatMessage chatMessage)
+        {
+            if (chatMessage.IsAdmin())
+                return EPermission.ADMIN;
+            else if (chatMessage.UserDetail.IsModerator)
+                return EPermission.MODS;
+            else if (chatMessage.UserDetail.IsSubscriber)
+                return EPermission.MODS;
+            else
+                return EPermission.EVERYONE;
+        }
 
         public static string GetCalledCommand(this ChatMessage chatMessage)
         {
             var originalMessage = chatMessage.Message;
             var indexOfWhiteSpace = originalMessage.IndexOf(' ');
             var lengthOfCommand = indexOfWhiteSpace >= 0 ? indexOfWhiteSpace : originalMessage.Length;
-            return originalMessage.Substring(0, lengthOfCommand);
+            return originalMessage.Substring(0, lengthOfCommand).ToLower();
         }
         
         public static string ExtractRecipient(this ChatMessage chatMessage) =>

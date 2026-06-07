@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using BlackLegionBot.TwitchApi;
-using TwitchLib.Api.Interfaces;
 
 namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
 {
@@ -18,7 +16,7 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
 
         public string GetOperatorName() => Operator;
 
-        public async Task<string> InjectOperatorAsync(string message, string username, string originalCommand)
+        public async Task<string> InjectOperatorAsync(string message, string username, string originalMessage)
         {
             if (message.Contains(Operator))
             {

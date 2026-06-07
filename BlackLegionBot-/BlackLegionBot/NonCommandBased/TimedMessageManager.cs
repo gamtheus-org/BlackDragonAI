@@ -13,17 +13,17 @@ namespace BlackLegionBot.NonCommandBased
         private readonly ICommandRetriever _commandRetriever;
         private readonly BlbApiHandler _apiClient;
         private IEnumerable<TimedMessageHandler> _timedMessageHandlers = new TimedMessageHandler[0];
-        private readonly Action<string> _sendMessage;
+        private readonly Func<string, Task> _sendMessageAsync;
         private LiveStatusManager _liveStatusManager;
 
-        public TimedMessageManager(ICommandRetriever commandRetriever, BlbApiHandler apiClient, Action<string> sendMessage)
+        public TimedMessageManager(ICommandRetriever commandRetriever, BlbApiHandler apiClient, Func<string, Task> sendMessageAsync)
         {
             this._commandRetriever = commandRetriever;
             this._apiClient = apiClient;
-            this._sendMessage = sendMessage;
+            this._sendMessageAsync = sendMessageAsync;
         }
 
-        public async void Start(LiveStatusManager liveStatusManager)
+        public async Task Start(LiveStatusManager liveStatusManager)
         {
             _liveStatusManager = liveStatusManager;
             RemoveAllActiveTimers();
@@ -41,7 +41,7 @@ namespace BlackLegionBot.NonCommandBased
                 if(commands.TryGetValue(tm.Command, out var command))
                 {
                     timedMessageHandlers.Add(new TimedMessageHandler(totalTimeBetweenMessages, 0, 
-                        command.Message, _sendMessage, _liveStatusManager, timeBetweenMessages * i));
+                        command.Message, _sendMessageAsync, _liveStatusManager, timeBetweenMessages * i));
                 }
             }
 

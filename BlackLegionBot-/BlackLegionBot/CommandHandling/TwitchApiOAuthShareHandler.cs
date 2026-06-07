@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using BlackLegionBot.TwitchApi;
 using TwitchLib.Client.Events;
 
@@ -17,11 +18,12 @@ namespace BlackLegionBot.CommandHandling
             _sendWhisper = sendWhisper;
         }
 
-        public void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        public Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
             var oauthToken = _twitchApi.GetAccessToken();
             Console.WriteLine($"Auth token {oauthToken}");
             _sendWhisper($"Access Token: {oauthToken}");
+            return Task.CompletedTask;
         }
     }
 }

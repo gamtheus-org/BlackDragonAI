@@ -1,6 +1,6 @@
 ﻿using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace BlackLegionBot.Credentials
 {
@@ -12,13 +12,13 @@ namespace BlackLegionBot.Credentials
         {
             using var sr = new StreamReader(CredentialsFileName);
             var rawText = await sr.ReadToEndAsync();
-            return JsonConvert.DeserializeObject<ApiCredentials>(rawText);
+            return JsonSerializer.Deserialize<ApiCredentials>(rawText);
         }
 
         public static async Task StoreCredentials(ApiCredentials cred)
         {
             await using var sw = new StreamWriter(CredentialsFileName);
-            await sw.WriteAsync(JsonConvert.SerializeObject(cred));
+            await sw.WriteAsync(JsonSerializer.Serialize(cred));
         }
     }
 }

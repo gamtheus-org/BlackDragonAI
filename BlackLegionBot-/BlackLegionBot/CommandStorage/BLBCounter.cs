@@ -1,6 +1,6 @@
 ﻿namespace BlackLegionBot.CommandStorage
 {
-    public class BLBCounter
+    public class BlbCounter
     {
         public string GameId { get; set; }
         public int Deaths { get; set; }

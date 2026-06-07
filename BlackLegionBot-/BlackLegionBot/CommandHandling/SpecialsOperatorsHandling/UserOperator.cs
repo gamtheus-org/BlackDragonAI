@@ -7,8 +7,8 @@ namespace BlackLegionBot.CommandHandling.SpecialsOperatorsHandling
         private const string Operator = "$user";
         
         public string GetOperatorName() => Operator;
-        
-        public async Task<string> InjectOperatorAsync(string message, string username, string originalCommand) =>
-            message.Replace(Operator, username);
+
+        public Task<string> InjectOperatorAsync(string message, string username, string originalMessage) =>
+            Task.FromResult(message.Replace(Operator, username));
     }
 }

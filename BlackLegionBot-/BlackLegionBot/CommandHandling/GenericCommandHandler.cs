@@ -1,8 +1,7 @@
-﻿using System.Linq;
+﻿using System.Threading.Tasks;
 using BlackLegionBot.CommandHandling.SpecialsOperatorsHandling;
 using BlackLegionBot.CommandStorage;
 using BlackLegionBot.TwitchApi;
-using TwitchLib.Api.Interfaces;
 using TwitchLib.Client.Events;
 
 namespace BlackLegionBot.CommandHandling
@@ -22,16 +21,17 @@ namespace BlackLegionBot.CommandHandling
             this._cooldownManager = cooldownManager;
         }
 
-        public async void Handle(OnMessageReceivedArgs messageReceivedArgs)
+        public async Task Handle(OnMessageReceivedArgs messageReceivedArgs)
         {
             var chatMessage = messageReceivedArgs.ChatMessage;
             var calledCommand = chatMessage.GetCalledCommand();
             var (commandIsFound, command) = await CommandRetriever.TryGetCommand(calledCommand);
-            if (commandIsFound && command.Permission >= chatMessage.GetPermissionOfSender() && (!_cooldownManager.IsInCooldown(command.OriginalCommand) || EPermission.MODS >= chatMessage.GetPermissionOfSender()))
+            if (commandIsFound && command.Permission >= chatMessage.GetPermissionOfSender() && 
+                (!_cooldownManager.IsInCooldown(command.OriginalCommand) || EPermission.MODS >= chatMessage.GetPermissionOfSender()))
             {
                 _cooldownManager.StartCooldown(command.OriginalCommand);
                 var messageToSend = await _operatorHandler.InjectOperators(command.Message, chatMessage.Username, messageReceivedArgs.ChatMessage.Message);
-                Bot.SendMessageToChannel(messageToSend);
+                await Bot.SendMessageToChannelAsync(messageToSend);
             }
         }
     }

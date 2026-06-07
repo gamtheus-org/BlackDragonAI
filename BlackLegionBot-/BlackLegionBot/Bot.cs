@@ -8,20 +8,16 @@ using System.Threading.Tasks;
 using BlackLegionBot.CommandHandling;
 using BlackLegionBot.CommandStorage;
 using BlackLegionBot.Credentials;
+using BlackLegionBot.Helpers;
 using BlackLegionBot.NonCommandBased;
 using BlackLegionBot.TwitchApi;
 using Microsoft.Extensions.Hosting;
-using TwitchLib.Api;
-using TwitchLib.Api.Core;
-using TwitchLib.Api.Core.Enums;
-using TwitchLib.Api.Interfaces;
 using TwitchLib.Client;
 using TwitchLib.Client.Extensions;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
 using TwitchLib.Communication.Enums;
 using TwitchLib.Communication.Models;
-using TwitchLib.PubSub;
 
 namespace BlackLegionBot
 {
@@ -38,94 +34,135 @@ namespace BlackLegionBot
         private TwitchClient Client { get; }
         private CommandSelector CommandSelector { get; }
         private readonly BlbApiHandler _blbApi;
-//        private readonly List<TimedMessage> _timedMessages = new List<TimedMessage>();
-        private TimedMessageManager _timedMessageManager;
+        private readonly TimedMessageManager _timedMessageManager;
         private readonly WebhookHandler _webhookHandler;
         private readonly CommercialManager _commercialManager;
         private readonly LiveStatusManager _liveStatusManager;
+        private readonly ReconnectionManager _reconnectionManager;
+        private readonly TwitchAuthManager _twitchAuthManager;
 
         public Bot(BlbApiHandler blbApi, ICommandRetriever commandRetriever, TwitchApiManager twitchApi, UserInfo userInfo, 
-            IRCCredentials ircCredentials, CooldownManager cooldownManager)
+            IrcCredentials ircCredentials, CooldownManager cooldownManager, TwitchAuthManager twitchAuthManager)
         {
             this._userInfo = userInfo;
+            _twitchAuthManager = twitchAuthManager;
             this._twitchApi = twitchApi;
             _blbApi = blbApi;
 
             var creds = new ConnectionCredentials(ircCredentials.Username, ircCredentials.AccessToken);
-            var webSocketClient = new WebSocketClient(new ClientOptions()
-            {
-                ClientType = ClientType.Chat
-            });
+            var clientOptions = new ClientOptions(new ReconnectionPolicy(reconnectInterval: 10, maxAttempts: 15),
+                clientType: ClientType.Chat);
+            var webSocketClient = new WebSocketClient(clientOptions);
             Client = new TwitchClient(webSocketClient);
 
-            this._liveStatusManager = new LiveStatusManager(_twitchApi);
-            this._commercialManager = new CommercialManager(twitchApi, _liveStatusManager);
-            CommandSelector = new CommandSelector(this, _twitchApi, commandRetriever, blbApi, cooldownManager, _commercialManager);
+            _liveStatusManager = new LiveStatusManager(_twitchApi);
+            
 
-            // EventHandlers
-            Client.OnMessageReceived += CommandSelector.HandleCommand;
-            Client.OnJoinedChannel += (sender, args) => SendMessageToChannel("Joined channel");
-
-            Client.Initialize(creds, this._userInfo.ChannelName);
-            this._twitchApi.AuthManager.WhisperNeedsToBeSend += SendWhisperToChannel;
-            _timedMessageManager = new TimedMessageManager(commandRetriever, blbApi, SendMessageToChannel);
-
-            var viewerEventsHandlers = new ViewerEventsHandlers(SendMessageToChannel);
-            var pubSubClient = new TwitchPubSub();
-            pubSubClient.Connect();
-            pubSubClient.OnFollow += viewerEventsHandlers.HandleFollowEvent;
-            pubSubClient.OnChannelSubscription += viewerEventsHandlers.HandleSubEvent;
-
-            _webhookHandler = new WebhookHandler(blbApi);
+            _webhookHandler = new WebhookHandler(blbApi, () => this._reconnectionManager.DisconnectAndReconnectAsync());
             _webhookHandler.CommandsChanged += () =>
             {
                 Console.WriteLine("Retrieving commands because webhook");
                 commandRetriever.RetrieveCommands();
             };
-            _webhookHandler.TimedMessagesChanged += () =>
+            _webhookHandler.TimedMessagesChanged += async () =>
             {
                 Console.WriteLine("Retrieving timed messages because webhook");
-                _timedMessageManager.Start(this._liveStatusManager);
+                await _timedMessageManager.Start(this._liveStatusManager);
+            };
+            _webhookHandler.AuthTokenChanged += async authToken =>
+            {
+                Console.WriteLine($"Processing auth token: {authToken}");
+                await _twitchAuthManager.UseAuthorizationToken(authToken);
             };
 
-            Client.OnDisconnected += (sender, args) =>
+
+            // _commercialManager = new CommercialManager(twitchApi, _liveStatusManager);
+            CommandSelector = new CommandSelector(this, _twitchApi, commandRetriever, blbApi, cooldownManager, _webhookHandler,
+                // _commercialManager, 
+                TimeoutUserInChannelAsync);
+
+            // EventHandlers
+            Client.OnMessageReceived += async (obj, args) =>
             {
-                Console.WriteLine($"Twitch client has disconnected at {DateTime.Now}");
-                Client.Reconnect();
+                Console.WriteLine($"{args.ChatMessage.DisplayName}: {args.ChatMessage.Message}");
+                await CommandSelector.HandleCommand(obj, args);
             };
-            Client.OnConnectionError += (sender, args) => { Console.WriteLine($"Connection error at {DateTime.Now}"); };
+            Client.OnJoinedChannel += (sender, args) => SendMessageToChannelAsync("Joined channel");
+
+            Client.Initialize(creds, this._userInfo.ChannelName);
+            this._twitchApi.AuthManager.WhisperNeedsToBeSendAsync += SendAsyncWhisperToChannelAsync;
+            _timedMessageManager = new TimedMessageManager(commandRetriever, blbApi, SendMessageToChannelAsync);
+
+            // var viewerEventsHandlers = new ViewerEventsHandlers(SendMessageToChannelAsync);
+            // var pubSubClient = new TwitchPubSub();
+            // pubSubClient.Connect();
+            // pubSubClient.OnFollow += viewerEventsHandlers.HandleFollowEvent;
+            // pubSubClient.OnChannelSubscription += viewerEventsHandlers.HandleSubEvent;
+
+            // Connection issues
+            this._reconnectionManager = new ReconnectionManager(Client);
+            Client.OnConnected += (sender, args) => 
+            {
+                this._reconnectionManager.OnConnection(sender, args);
+                Console.WriteLine($"Joined channels: {this.Client.JoinedChannels.Count}");
+                foreach(var channel in this.Client.JoinedChannels)
+                {
+                    Console.WriteLine("Joined channels: " + channel.Channel);
+                }
+
+                return Task.CompletedTask;
+            };
+            Client.OnDisconnected += _reconnectionManager.OnDisconnectAsync;
+            Client.OnError += (sender, args) => { 
+                Console.WriteLine("Error occurred: \n" + args.Exception);
+                return Task.CompletedTask;
+            };
+            Client.OnFailureToReceiveJoinConfirmation += (sender, args) =>
+            {
+                Console.WriteLine("Failed to join chat");
+                return Task.CompletedTask;
+            };
+            Client.OnConnectionError += (sender, args) =>
+            {
+                Console.WriteLine($"Connection error at {DateTime.Now}");
+                return Task.CompletedTask;
+            };
             Client.OnLeftChannel += (sender, args) =>
             {
                 Console.WriteLine($"Client left channel at {DateTime.UtcNow}");
+                return Task.CompletedTask;
             };
         }
 
-        public async Task Connect()
+        private async Task Connect()
         {
             // blb api
             await _blbApi.Authenticate();
 
             // twitch irc
-            Client.Connect();
-//            await this._webhookHandler.Setup();
+            await Client.ConnectAsync();
         }
 
-        public void SendMessageToChannel(string message)
+        public async Task SendMessageToChannelAsync(string message)
         {
             if (!message.TrimStart()[0].Equals('/'))
+            {
                 message = $"/me {message}";
-            this.Client.SendMessage(this._userInfo.ChannelName, message);
+            }
+
+            await this.Client.SendMessageAsync(this._userInfo.ChannelName, message);
         }
 
-        public void SendWhisperToChannel(string message) =>
-            SendWhisperToChannel(message, this._userInfo.ChannelName);
+        public Task SendAsyncWhisperToChannelAsync(string message) =>
+            SendWhisperToChannelAsync(message, "gamtheus");
         
-        public void SendWhisperToChannel(string message, string whisperTo) =>
-            SendMessageToChannel($"/w {whisperTo} {message}");
+        public Task SendWhisperToChannelAsync(string message, string whisperTo) =>
+            SendMessageToChannelAsync($"/w {whisperTo} {message}");
 
-        public void TimeoutUser(string user, int duration, string message = "")
+        private async Task ReconnectAsync(int attempts = 0)
         {
-            Client.TimeoutUser(this._userInfo.ChannelName, user, new TimeSpan(0, duration / 60, duration % 60), message);
+            await Task.Delay(attempts * 5 * 1000);
+            await this.Client.ReconnectAsync();
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -134,12 +171,20 @@ namespace BlackLegionBot
 
             await this._twitchApi.Initialize();
 
-            _timedMessageManager.Start(this._liveStatusManager);
+            this._webhookHandler.ListenForWebhooks();
+            await _timedMessageManager.Start(this._liveStatusManager);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
+        }
+
+        public async Task TimeoutUserInChannelAsync(string username, TimeSpan duration)
+        {
+            await this.Client.SendMessageAsync(this._userInfo.ChannelName,
+                $"/timeout {username} {duration.TotalSeconds}");
+            // await Client.TimeoutUserAsync(_userInfo.ChannelName, username, duration);
         }
     }
 }
