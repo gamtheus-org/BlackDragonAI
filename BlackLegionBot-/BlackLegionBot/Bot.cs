@@ -56,6 +56,26 @@ namespace BlackLegionBot
             Client = new TwitchClient(webSocketClient);
 
             _liveStatusManager = new LiveStatusManager(_twitchApi);
+            
+
+            _webhookHandler = new WebhookHandler(blbApi, () => this._reconnectionManager.DisconnectAndReconnectAsync());
+            _webhookHandler.CommandsChanged += () =>
+            {
+                Console.WriteLine("Retrieving commands because webhook");
+                commandRetriever.RetrieveCommands();
+            };
+            _webhookHandler.TimedMessagesChanged += async () =>
+            {
+                Console.WriteLine("Retrieving timed messages because webhook");
+                await _timedMessageManager.Start(this._liveStatusManager);
+            };
+            _webhookHandler.AuthTokenChanged += async authToken =>
+            {
+                Console.WriteLine($"Processing auth token: {authToken}");
+                await _twitchAuthManager.UseAuthorizationToken(authToken);
+            };
+
+
             // _commercialManager = new CommercialManager(twitchApi, _liveStatusManager);
             CommandSelector = new CommandSelector(this, _twitchApi, commandRetriever, blbApi, cooldownManager, _webhookHandler,
                 // _commercialManager, 
@@ -111,23 +131,6 @@ namespace BlackLegionBot
             {
                 Console.WriteLine($"Client left channel at {DateTime.UtcNow}");
                 return Task.CompletedTask;
-            };
-
-            _webhookHandler = new WebhookHandler(blbApi, () => this._reconnectionManager.DisconnectAndReconnectAsync());
-            _webhookHandler.CommandsChanged += () =>
-            {
-                Console.WriteLine("Retrieving commands because webhook");
-                commandRetriever.RetrieveCommands();
-            };
-            _webhookHandler.TimedMessagesChanged += async () =>
-            {
-                Console.WriteLine("Retrieving timed messages because webhook");
-                await _timedMessageManager.Start(this._liveStatusManager);
-            };
-            _webhookHandler.AuthTokenChanged += async authToken =>
-            {
-                Console.WriteLine($"Processing auth token: {authToken}");
-                await _twitchAuthManager.UseAuthorizationToken(authToken);
             };
         }
 
